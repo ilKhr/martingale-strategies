@@ -8,6 +8,7 @@
     "big.js": "^6.2.1"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "start": "node ./build/index"
   }
 }
