@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.0"
+  },
+  "dependencies": {
+    "big.js": "^6.2.1"
+  },
+  "scripts": {
+    "test": "vitest"
+  }
+}
