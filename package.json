@@ -9,6 +9,6 @@
   },
   "scripts": {
     "test": "vitest",
-    "start": "node ./build/index"
+    "start": "node ./build/src/index"
   }
 }
