@@ -24,7 +24,6 @@ const MartingaleStrategies: MartingaleStrategies = {
         stopLoss: params.stopLoss,
       },
       orders,
-      status: "active",
     };
   },
   onOrderDone: (params) => {

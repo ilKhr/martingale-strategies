@@ -1,4 +1,4 @@
-import { ID, Side } from "../../types";
+import { Order } from "entities/order/order.types";
 import {
   LongCalculationPayload,
   ShortCalculationPayload,
@@ -8,14 +8,7 @@ import {
 import { CalculateOrderGridType } from "./grid.types";
 
 export const calculateOrderGrid: CalculateOrderGridType = (params) => {
-  const orderGrid: {
-    id: ID;
-    price: string;
-    quantity: string;
-    side: Side;
-    status: "active";
-    sequenceIndexInSide: number;
-  }[] = [];
+  const orderGrid: Order[] = [];
 
   let orderIdCounter = 1;
 

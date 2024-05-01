@@ -43,7 +43,7 @@ export type ShortSellParams = {
     configuration: {
       countOrders: Grid["configuration"]["countOrders"];
     };
-    orders: (Order & { side: "SELL" })[];
+    orders: Order[];
   };
 };
 

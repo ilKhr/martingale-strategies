@@ -11,7 +11,6 @@ export type Grid = {
     startPrice: string;
     stopLoss?: number;
   };
-  status: "active" | "done" | "canceled" | "error";
 };
 
 export type CreateGridParams = {
@@ -34,11 +33,4 @@ export type CalculateOrderGridType = (params: {
   currencyPrice: string;
   profit: Percent;
   tradingAlgorithm: TradingAlgorithm;
-}) => {
-  id: ID;
-  price: string;
-  quantity: string;
-  side: Side;
-  status: "active";
-  sequenceIndexInSide: number;
-}[];
+}) => Order[];

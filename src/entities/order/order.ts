@@ -333,19 +333,25 @@ export const onOrderDoneHandler: OnOrderDoneHandlerType = (params) => {
 
   const table = {
     LONG_BUY: longBuyHandler,
+    LONG_BUY_OCO: longBuyOCOHandler,
     LONG_SELL: longSellHandler,
     SHORT_SELL: shortSellHandler,
   };
 
-  const resultHandler = table[orderAction.value]({
+  const key = `${orderAction.value}${
+    params.grid.configuration.stopLoss !== undefined ? "_OCO" : ""
+  }` as keyof typeof table;
+
+  const resultHandler = table[key]({
     grid: {
       configuration: {
         countOrders: params.grid.configuration.countOrders,
         profit: params.grid.configuration.profit,
+        overlap: params.grid.configuration.overlap,
+        startPrice: params.grid.configuration.startPrice,
+        stopLoss: params.grid.configuration.stopLoss as number,
       },
-      orders: params.grid.orders.filter(
-        ({ side }) => side === "SELL"
-      ) as (Order & { side: "SELL" })[],
+      orders: params.grid.orders,
     },
     triggerOrder: {
       id: triggerOrder.id,
