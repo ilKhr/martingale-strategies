@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("vitest/config");
 exports.default = (0, config_1.defineConfig)({
-    test: {
-        globals: true,
-        hookTimeout: 40000,
-        exclude: ["node_modules", "build"],
-        pool: "forks",
-    },
+  test: {
+    globals: true,
+    hookTimeout: 40000,
+    exclude: ["node_modules", "build"],
+    pool: "threads",
+  },
 });

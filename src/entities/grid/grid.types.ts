@@ -1,5 +1,9 @@
-import { ID, Percent, Side, TradingAlgorithm } from "../../types";
-import { Order } from "../order/order.types";
+import { Percent, TradingAlgorithm } from "../../types";
+import {
+  CallbackBaseOrderAction,
+  LimitOrder,
+  Order,
+} from "../order/order.types";
 
 export type Grid = {
   orders: Order[];
@@ -25,12 +29,15 @@ export type CreateGridParams = {
   stopLoss?: number;
 };
 
-export type CalculateOrderGridType = (params: {
-  countOrders: number;
-  deposit: string;
-  martingale: Percent;
-  overlap: Percent;
-  currencyPrice: string;
-  profit: Percent;
-  tradingAlgorithm: TradingAlgorithm;
-}) => Order[];
+export type CalculateOrderGridType = (
+  params: {
+    countOrders: number;
+    deposit: string;
+    martingale: Percent;
+    overlap: Percent;
+    currencyPrice: string;
+    profit: Percent;
+    tradingAlgorithm: TradingAlgorithm;
+  },
+  createOrderCallback?: CallbackBaseOrderAction
+) => LimitOrder[];

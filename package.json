@@ -1,14 +1,17 @@
 {
   "devDependencies": {
     "@types/big.js": "^6.2.2",
+    "@types/node": "^20.12.8",
     "typescript": "^5.4.5",
     "vitest": "^1.5.0"
   },
+  "version": "1.0.0",
+  "main": "./src",
   "dependencies": {
     "big.js": "^6.2.1"
   },
   "scripts": {
-    "test": "vitest",
-    "start": "node ./build/src/index"
+    "test": "vitest run",
+    "start": "node ./build"
   }
 }

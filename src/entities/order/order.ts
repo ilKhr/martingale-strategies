@@ -15,11 +15,14 @@ import {
   successWrapper,
 } from "../../utils/result";
 import {
+  BasicOrderActions,
   CreateOCOOrderParams,
   CreateOrderParams,
+  LimitOrder,
   LongBuyOCOParams,
   LongBuyParams,
   LongSellParams,
+  OcoGroupOrders,
   OnOrderDoneHandlerType,
   Order,
   ReactiveHandlerType,
@@ -27,14 +30,18 @@ import {
   StopLimitOrder,
 } from "./order.types";
 
+// Type guard
+const hasNotOcoOrder = (orders: Order[]): orders is LimitOrder[] =>
+  orders.every((order) => !("orderListId" in order));
+
 // Base Order Actions
 /**
  * Mutable grid
  */
-const createAndAddOrder = (
-  params: CreateOrderParams,
-  grid: { orders: Order[] }
-): Order["id"] => {
+export const createAndAddOrder: BasicOrderActions<
+  CreateOrderParams,
+  LimitOrder["id"]
+> = (params, grid, callback): LimitOrder["id"] => {
   const maxIdOrder = getOrderWithMaxId(grid.orders);
   const maxSequenceIndexOrder = getOrderWithMaxSequenceIndex(
     grid.orders,
@@ -43,88 +50,135 @@ const createAndAddOrder = (
 
   const newId = (maxIdOrder?.id ?? 0) + 1;
 
-  const newOrder: Order = {
+  const newOrder: LimitOrder = {
     id: newId,
     status: "active",
+    type: "LIMIT",
     sequenceIndexInSide: (maxSequenceIndexOrder?.sequenceIndexInSide ?? -1) + 1,
     ...params,
   };
 
   grid.orders.push(newOrder);
 
+  callback && callback(newOrder);
+
   return newId;
 };
 
 /**
  * Mutable grid
  */
-const createAndStopLimitOrder = (
-  params: CreateOCOOrderParams,
-  grid: { orders: Order[] }
-): Order["id"] => {
+const createAndAddOCOOrder: BasicOrderActions<
+  CreateOCOOrderParams,
+  [LimitOrder["id"], StopLimitOrder["id"]]
+> = (params, grid, callback) => {
+  if (!hasNotOcoOrder(grid.orders)) {
+    throw new Error("OCO order allready created in this grid");
+  }
+
   const maxIdOrder = getOrderWithMaxId(grid.orders);
   const maxSequenceIndexOrder = getOrderWithMaxSequenceIndex(
     grid.orders,
     params.side
   );
 
-  const newId = (maxIdOrder?.id ?? 0) + 1;
+  const sequenceIndexInSide =
+    (maxSequenceIndexOrder?.sequenceIndexInSide ?? -1) + 1;
 
-  const stopLimitOrder: StopLimitOrder = {
-    id: newId,
+  const limitOrderId = (maxIdOrder?.id ?? 0) + 1;
+  const stopLimitOrderId = limitOrderId + 1;
+
+  const orderListId = 1;
+
+  const limitOrder: OcoGroupOrders["orders"]["0"] = {
+    id: limitOrderId,
     status: "active",
-    sequenceIndexInSide: (maxSequenceIndexOrder?.sequenceIndexInSide ?? -1) + 1,
+    sequenceIndexInSide,
+    price: params.limitOrderPrice,
+    type: "LIMIT",
+    quantity: params.quantity,
+    side: params.side,
+    orderListId,
+  };
+
+  const stopLimitOrder: OcoGroupOrders["orders"]["1"] = {
+    id: stopLimitOrderId,
+    status: "active",
+    sequenceIndexInSide,
     price: params.stopPrice,
+    type: "STOP_LIMIT",
     quantity: params.quantity,
     side: params.side,
     stopPrice: params.stopPrice,
+    orderListId,
   };
 
-  grid.orders.push(stopLimitOrder);
+  const ocoGroupOrders: OcoGroupOrders = {
+    orders: [limitOrder, stopLimitOrder],
+    type: "OCO",
+    sequenceIndexInSide,
+  };
 
-  return newId;
+  grid.orders.push(limitOrder);
+  (
+    grid.orders as (
+      | OcoGroupOrders["orders"]["0"]
+      | OcoGroupOrders["orders"]["1"]
+    )[]
+  ).push(stopLimitOrder);
+
+  callback && callback(ocoGroupOrders);
+
+  return ocoGroupOrders.orders.map((order) => order.id) as [number, number];
 };
 
 /**
  * Mutable grid
  */
-const cancelOrder = (
-  id: Order["id"],
-  grid: { orders: Order[] }
-): Order["id"] | undefined => {
-  const result = grid.orders.some((order) => {
-    if (order.id === id) {
-      order.status = "cancel";
-      return true;
-    }
-    return false;
-  });
+const cancelOrder: BasicOrderActions<Order["id"], Order | undefined> = (
+  id,
+  grid,
+  callback
+) => {
+  const foundIndex = grid.orders.findIndex((order) => order.id === id);
 
-  return result ? id : undefined;
+  if (foundIndex === -1) {
+    return;
+  }
+
+  callback && callback(grid.orders[foundIndex]!);
+
+  grid.orders[foundIndex]!.status = "cancel";
+
+  return grid.orders[foundIndex];
 };
 
 /**
  * Mutable grid
  */
-const markAsDoneOrder = (
-  id: Order["id"],
-  grid: { orders: Order[] }
-): Order["id"] | undefined => {
-  const result = grid.orders.some((order) => {
-    if (order.id === id) {
-      order.status = "done";
-      return true;
-    }
-    return false;
-  });
+const markAsDoneOrder: BasicOrderActions<Order["id"], Order | undefined> = (
+  id,
+  grid,
+  callback
+) => {
+  const foundIndex = grid.orders.findIndex((order) => order.id === id);
 
-  return result ? id : undefined;
+  if (foundIndex === -1) {
+    return;
+  }
+
+  callback && callback(grid.orders[foundIndex]!);
+
+  grid.orders[foundIndex]!.status = "done";
+
+  return grid.orders[foundIndex];
 };
 
 // Grid handlers
-export const shortSellHandler: ReactiveHandlerType<ShortSellParams> = (
-  params
-) => {
+export const shortSellHandler: ReactiveHandlerType<
+  ShortSellParams,
+  LimitOrder
+> = (params, callbacks) => {
   const newOrders = deepCloneObject(params.grid.orders);
 
   const triggerOrder = findOrderById(newOrders, params.triggerOrder.id);
@@ -145,7 +199,11 @@ export const shortSellHandler: ReactiveHandlerType<ShortSellParams> = (
     );
   }
 
-  markAsDoneOrder(triggerOrder.id, { orders: newOrders });
+  markAsDoneOrder(
+    triggerOrder.id,
+    { orders: newOrders },
+    callbacks?.markOrderAsDone
+  );
 
   const isTriggerLastOrder =
     params.grid.configuration.countOrders ===
@@ -158,8 +216,9 @@ export const shortSellHandler: ReactiveHandlerType<ShortSellParams> = (
   return successWrapper({ orders: newOrders, isCycleOver: true });
 };
 
-export const longSellHandler: ReactiveHandlerType<LongSellParams> = (
-  params
+export const longSellHandler: ReactiveHandlerType<LongSellParams, Order> = (
+  params,
+  callbacks
 ) => {
   const newOrders = deepCloneObject(params.grid.orders);
 
@@ -181,21 +240,34 @@ export const longSellHandler: ReactiveHandlerType<LongSellParams> = (
     );
   }
 
-  markAsDoneOrder(params.triggerOrder.id, { orders: newOrders });
+  markAsDoneOrder(
+    params.triggerOrder.id,
+    { orders: newOrders },
+    callbacks?.markOrderAsDone
+  );
 
   const activeBuyOrders = newOrders.filter(
     (order) => order.status === "active" && order.side === "BUY"
   );
 
-  activeBuyOrders.map((order) => cancelOrder(order.id, { orders: newOrders }));
+  activeBuyOrders.map((order) =>
+    cancelOrder(order.id, { orders: newOrders }, callbacks?.cancelOrder)
+  );
 
   return successWrapper({ isCycleOver: true, orders: newOrders });
 };
 
-export const longBuyHandler: ReactiveHandlerType<LongBuyParams> = (params) => {
+export const longBuyHandler: ReactiveHandlerType<LongBuyParams, LimitOrder> = (
+  params,
+  callbacks
+) => {
   const newOrders = deepCloneObject(params.grid.orders);
 
-  markAsDoneOrder(params.triggerOrder.id, { orders: newOrders });
+  markAsDoneOrder(
+    params.triggerOrder.id,
+    { orders: newOrders },
+    callbacks?.markOrderAsDone
+  );
 
   const triggerOrder = findOrderById(newOrders, params.triggerOrder.id);
 
@@ -220,7 +292,11 @@ export const longBuyHandler: ReactiveHandlerType<LongBuyParams> = (params) => {
   );
 
   if (activeSellOrder) {
-    cancelOrder(activeSellOrder.id, { orders: newOrders });
+    cancelOrder(
+      activeSellOrder.id,
+      { orders: newOrders },
+      callbacks?.cancelOrder
+    );
   }
 
   const doneOrders = newOrders.filter((order) => order.status === "done");
@@ -237,22 +313,32 @@ export const longBuyHandler: ReactiveHandlerType<LongBuyParams> = (params) => {
 
   createAndAddOrder(
     {
-      price: sellCalculated.price.toString(),
-      quantity: sellCalculated.allQuantity.toString(),
+      price: sellCalculated.price,
+      quantity: sellCalculated.allQuantity,
       side,
     },
-    { orders: newOrders }
+    { orders: newOrders },
+    callbacks?.createOrder
   );
 
   return successWrapper({ isCycleOver: false, orders: newOrders });
 };
 
-export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams> = (
-  params
+export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
+  params,
+  callbacks
 ) => {
+  if (!hasNotOcoOrder(params.grid.orders)) {
+    throw new Error("OCO order allready created in this grid");
+  }
+
   const newOrders = deepCloneObject(params.grid.orders);
 
-  markAsDoneOrder(params.triggerOrder.id, { orders: newOrders });
+  markAsDoneOrder(
+    params.triggerOrder.id,
+    { orders: newOrders },
+    callbacks?.markOrderAsDone
+  );
 
   const triggerOrder = findOrderById(newOrders, params.triggerOrder.id);
 
@@ -272,46 +358,71 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams> = (
     );
   }
 
-  const result = longBuyHandler({
-    grid: {
-      orders: newOrders,
-      configuration: params.grid.configuration,
-    },
-    triggerOrder: params.triggerOrder,
-  });
-
   const isTriggerLastOrder =
     params.grid.configuration.countOrders ===
     triggerOrder.sequenceIndexInSide + 1; // because sequence index start from 0
 
-  if (!isTriggerLastOrder || result.isFail) {
-    return result;
+  const activeSellOrder = newOrders.find(
+    (order) => order.side === "SELL" && order.status === "active"
+  );
+
+  if (activeSellOrder) {
+    cancelOrder(
+      activeSellOrder.id,
+      { orders: newOrders },
+      callbacks?.cancelOrder
+    );
   }
 
-  const stopLossPrice = stopLimitPriceCalculation(
-    params.grid.configuration.overlap,
-    params.grid.configuration.stopLoss,
-    params.grid.configuration.startPrice
-  );
+  const doneOrders = newOrders.filter((order) => order.status === "done");
 
-  const lastSellOrder = result.value.orders[
-    result.value.orders.length - 1
-  ] as Order;
+  const sellCalculated = sellLongCalculation({
+    priceQuantity: doneOrders.map(({ price, quantity }) => ({
+      price,
+      quantity,
+    })),
+    profit: params.grid.configuration.profit,
+  });
 
-  createAndStopLimitOrder(
-    {
-      quantity: lastSellOrder?.quantity,
-      side: "SELL",
-      stopPrice: stopLossPrice,
-    },
-    { orders: result.value.orders }
-  );
+  const side = "SELL";
 
-  return successWrapper({ isCycleOver: false, orders: result.value.orders });
+  if (!isTriggerLastOrder) {
+    createAndAddOrder(
+      {
+        price: sellCalculated.price,
+        quantity: sellCalculated.allQuantity,
+        side,
+      },
+      { orders: newOrders },
+      callbacks?.createOrder
+    );
+  } else {
+    const stopLossPrice = stopLimitPriceCalculation(
+      params.grid.configuration.overlap,
+      params.grid.configuration.stopLoss,
+      params.grid.configuration.startPrice
+    );
+
+    createAndAddOCOOrder(
+      {
+        quantity: sellCalculated.allQuantity,
+        side: "SELL",
+        stopPrice: stopLossPrice,
+        limitOrderPrice: sellCalculated.price,
+      },
+      { orders: newOrders },
+      callbacks?.createOcoOrder
+    );
+  }
+
+  return successWrapper({ isCycleOver: false, orders: newOrders });
 };
 
 // Use case
-export const onOrderDoneHandler: OnOrderDoneHandlerType = (params) => {
+export const onOrderDoneHandler: OnOrderDoneHandlerType = (
+  params,
+  callbacks
+) => {
   const triggerOrder = findOrderById(params.grid.orders, params.triggerOrderId);
 
   if (!triggerOrder) {
@@ -342,21 +453,24 @@ export const onOrderDoneHandler: OnOrderDoneHandlerType = (params) => {
     params.grid.configuration.stopLoss !== undefined ? "_OCO" : ""
   }` as keyof typeof table;
 
-  const resultHandler = table[key]({
-    grid: {
-      configuration: {
-        countOrders: params.grid.configuration.countOrders,
-        profit: params.grid.configuration.profit,
-        overlap: params.grid.configuration.overlap,
-        startPrice: params.grid.configuration.startPrice,
-        stopLoss: params.grid.configuration.stopLoss as number,
+  const resultHandler = table[key](
+    {
+      grid: {
+        configuration: {
+          countOrders: params.grid.configuration.countOrders,
+          profit: params.grid.configuration.profit,
+          overlap: params.grid.configuration.overlap,
+          startPrice: params.grid.configuration.startPrice,
+          stopLoss: params.grid.configuration.stopLoss as number,
+        },
+        orders: params.grid.orders as LimitOrder[],
       },
-      orders: params.grid.orders,
+      triggerOrder: {
+        id: triggerOrder.id,
+      },
     },
-    triggerOrder: {
-      id: triggerOrder.id,
-    },
-  });
+    callbacks
+  );
 
   if (resultHandler.isFail) {
     return resultHandler;

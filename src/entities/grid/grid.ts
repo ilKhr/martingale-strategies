@@ -1,16 +1,18 @@
-import { Order } from "entities/order/order.types";
 import {
   LongCalculationPayload,
   ShortCalculationPayload,
   longCalculation,
   shortCalculation,
 } from "../../utils/formulas";
+import { createAndAddOrder } from "../order/order";
+import { LimitOrder } from "../order/order.types";
 import { CalculateOrderGridType } from "./grid.types";
 
-export const calculateOrderGrid: CalculateOrderGridType = (params) => {
-  const orderGrid: Order[] = [];
-
-  let orderIdCounter = 1;
+export const calculateOrderGrid: CalculateOrderGridType = (
+  params,
+  createOrderCallback
+) => {
+  const orderGrid: LimitOrder[] = [];
 
   for (
     let sequenceIndexInSide = 0;
@@ -32,14 +34,15 @@ export const calculateOrderGrid: CalculateOrderGridType = (params) => {
     // TODO: calculate price with exchange filter
     // TODO: calculate quantity with exchange filter
 
-    orderGrid.push({
-      id: orderIdCounter++,
-      price: priceWithIntent.toString(),
-      quantity: quantity.toString(),
-      side: isLongOrder ? "BUY" : "SELL",
-      status: "active",
-      sequenceIndexInSide: sequenceIndexInSide,
-    });
+    createAndAddOrder(
+      {
+        price: priceWithIntent.toString(),
+        quantity: quantity.toString(),
+        side: isLongOrder ? "BUY" : "SELL",
+      },
+      { orders: orderGrid },
+      createOrderCallback
+    );
   }
 
   return orderGrid;

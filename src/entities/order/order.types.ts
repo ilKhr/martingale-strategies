@@ -1,16 +1,18 @@
-import { ID, Side, TradingAlgorithm } from "../../types";
-import { BaseError, Result } from "../../utils/result";
-import { Grid } from "../grid/grid.types";
+import { Grid } from "src/entities/grid/grid.types";
+import { ID, Side } from "src/types";
+import { Result, BaseError } from "src/utils/result";
 
-export type MainOrderData = {};
+type OrderType = "OCO" | "LIMIT" | "STOP_LIMIT";
 
-export type Order = {
+export type LimitOrder = {
   id: ID;
   quantity: string;
   price: string;
   side: Side;
+  type: Extract<OrderType, "LIMIT">;
   status: "active" | "done" | "cancel";
   sequenceIndexInSide: number;
+  orderListId?: number;
 };
 
 export type StopLimitOrder = {
@@ -18,9 +20,22 @@ export type StopLimitOrder = {
   quantity: string;
   price: string;
   stopPrice: string;
+  type: Extract<OrderType, "STOP_LIMIT">;
   side: Side;
   status: "active" | "done" | "cancel";
   sequenceIndexInSide: number;
+  orderListId?: number;
+};
+
+export type Order = LimitOrder | StopLimitOrder;
+
+export type OcoGroupOrders = {
+  type: Extract<OrderType, "OCO">;
+  sequenceIndexInSide: number;
+  orders: [
+    LimitOrder & { orderListId: number },
+    StopLimitOrder & { orderListId: number }
+  ];
 };
 
 export type CreateOrderParams = {
@@ -32,45 +47,46 @@ export type CreateOrderParams = {
 export type CreateOCOOrderParams = {
   quantity: string;
   side: Side;
+  limitOrderPrice: string;
   stopPrice: string;
 };
 
 export type ShortSellParams = {
   triggerOrder: {
-    id: Order["id"];
+    id: LimitOrder["id"];
   };
   grid: {
     configuration: {
       countOrders: Grid["configuration"]["countOrders"];
     };
-    orders: Order[];
+    orders: LimitOrder[];
   };
 };
 
 export type LongSellParams = {
   triggerOrder: {
-    id: Order["id"];
+    id: LimitOrder["id"];
   };
   grid: {
-    orders: Order[];
+    orders: LimitOrder[];
   };
 };
 
 export type LongBuyParams = {
   triggerOrder: {
-    id: Order["id"];
+    id: LimitOrder["id"];
   };
   grid: {
     configuration: {
       profit: Grid["configuration"]["profit"];
     };
-    orders: Order[];
+    orders: LimitOrder[];
   };
 };
 
 export type LongBuyOCOParams = {
   triggerOrder: {
-    id: Order["id"];
+    id: LimitOrder["id"];
   };
   grid: {
     configuration: {
@@ -80,26 +96,47 @@ export type LongBuyOCOParams = {
       overlap: Grid["configuration"]["overlap"];
       startPrice: Grid["configuration"]["startPrice"];
     };
-    orders: Order[];
+    orders: LimitOrder[];
   };
 };
 
-export type ReactiveHandlerType<T> = (params: T) => Result<
+export type ReactiveHandlerType<T, OrderType extends Order | LimitOrder> = (
+  params: T,
+  callbacks: BaseOrderActionsCallbacks | undefined
+) => Result<
   {
     isCycleOver: boolean;
-    orders: Order[];
+    orders: OrderType[];
   },
   BaseError
 >;
 
 export type OnOrderDoneParams = {
-  triggerOrderId: Order["id"];
+  triggerOrderId: LimitOrder["id"];
   grid: Grid;
-  cancelOrder?: (id: Order["id"]) => Order["id"];
-  createOrder?: (params: CreateOrderParams) => Order;
+  cancelOrder?: (id: LimitOrder["id"]) => LimitOrder["id"];
+  createOrder?: (params: CreateOrderParams) => LimitOrder;
 };
 
-export type OnOrderDoneHandlerType = (params: OnOrderDoneParams) => Result<
+export type CallbackBaseOrderAction = (
+  param: LimitOrder | StopLimitOrder | OcoGroupOrders
+) => unknown;
+
+export type BasicOrderActions<Params, ReturnValue> = (
+  params: Params,
+  grid: { orders: Grid["orders"] },
+  callback: CallbackBaseOrderAction | undefined
+) => ReturnValue;
+
+export type BaseOrderActionsCallbacks = Record<
+  "createOrder" | "cancelOrder" | "createOcoOrder" | "markOrderAsDone",
+  CallbackBaseOrderAction
+>;
+
+export type OnOrderDoneHandlerType = (
+  params: OnOrderDoneParams,
+  callbacks: BaseOrderActionsCallbacks | undefined
+) => Result<
   {
     isCycleOver: boolean;
     grid: Grid;

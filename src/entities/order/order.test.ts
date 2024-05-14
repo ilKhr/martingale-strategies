@@ -9,19 +9,20 @@ import {
   LongBuyOCOParams,
   LongBuyParams,
   LongSellParams,
-  Order,
+  LimitOrder,
   ShortSellParams,
 } from "./order.types";
 import { deepCloneObject } from "../../utils";
 
 describe("shortSellHandler", () => {
-  const normalOrder = {
+  const normalOrder: LimitOrder = {
     id: 1,
     price: "10",
     quantity: "10",
     sequenceIndexInSide: 0,
     side: "SELL",
     status: "active",
+    type: "LIMIT",
   } as const;
 
   describe("Correctness of returned values", () => {
@@ -44,7 +45,7 @@ describe("shortSellHandler", () => {
           ],
         },
       };
-      const result = shortSellHandler(params);
+      const result = shortSellHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -76,7 +77,7 @@ describe("shortSellHandler", () => {
           ],
         },
       };
-      const result = shortSellHandler(params);
+      const result = shortSellHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -97,7 +98,7 @@ describe("shortSellHandler", () => {
         },
         grid: { configuration: { countOrders: 3 }, orders: [] },
       };
-      const result = shortSellHandler(params);
+      const result = shortSellHandler(params, undefined);
       expect(result).toEqual({
         value: {
           error: "shortSellHandler: triggerOrder not exist: id:2",
@@ -118,7 +119,7 @@ describe("shortSellHandler", () => {
           orders: [{ ...normalOrder, id: triggerOrderId }],
         },
       };
-      const result = shortSellHandler(params);
+      const result = shortSellHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -130,30 +131,33 @@ describe("shortSellHandler", () => {
 
   describe("Calculations", () => {
     test("should mark trigger order as done and is CycleOver false if not last order", () => {
-      const resultCalculations = shortSellHandler({
-        grid: {
-          configuration: {
-            countOrders: 2,
+      const resultCalculations = shortSellHandler(
+        {
+          grid: {
+            configuration: {
+              countOrders: 2,
+            },
+            orders: [
+              {
+                ...normalOrder,
+                id: 1,
+                price: "79.5",
+                quantity: "0.84",
+                sequenceIndexInSide: 0,
+              },
+              {
+                ...normalOrder,
+                price: "162.98",
+                id: 2,
+                quantity: "0.93",
+                sequenceIndexInSide: 1,
+              },
+            ],
           },
-          orders: [
-            {
-              ...normalOrder,
-              id: 1,
-              price: "79.5",
-              quantity: "0.84",
-              sequenceIndexInSide: 0,
-            },
-            {
-              ...normalOrder,
-              price: "162.98",
-              id: 2,
-              quantity: "0.93",
-              sequenceIndexInSide: 1,
-            },
-          ],
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       expect(resultCalculations).toEqual({
         value: {
@@ -165,6 +169,7 @@ describe("shortSellHandler", () => {
               sequenceIndexInSide: 0,
               side: "SELL",
               status: "done",
+              type: "LIMIT",
             },
             {
               id: 2,
@@ -173,6 +178,7 @@ describe("shortSellHandler", () => {
               sequenceIndexInSide: 1,
               side: "SELL",
               status: "active",
+              type: "LIMIT",
             },
           ],
           isCycleOver: false,
@@ -182,32 +188,35 @@ describe("shortSellHandler", () => {
     });
 
     test("should mark trigger order as done and is CycleOver:true if last order", () => {
-      const resultCalculations = shortSellHandler({
-        grid: {
-          configuration: {
-            countOrders: 2,
-          },
-          orders: [
-            {
-              ...normalOrder,
+      const resultCalculations = shortSellHandler(
+        {
+          grid: {
+            configuration: {
+              countOrders: 2,
+            },
+            orders: [
+              {
+                ...normalOrder,
 
-              id: 1,
-              price: "79.5",
-              quantity: "0.84",
-              sequenceIndexInSide: 0,
-              status: "done",
-            },
-            {
-              ...normalOrder,
-              price: "162.98",
-              id: 2,
-              quantity: "0.93",
-              sequenceIndexInSide: 1,
-            },
-          ],
+                id: 1,
+                price: "79.5",
+                quantity: "0.84",
+                sequenceIndexInSide: 0,
+                status: "done",
+              },
+              {
+                ...normalOrder,
+                price: "162.98",
+                id: 2,
+                quantity: "0.93",
+                sequenceIndexInSide: 1,
+              },
+            ],
+          },
+          triggerOrder: { id: 2 },
         },
-        triggerOrder: { id: 2 },
-      });
+        undefined
+      );
 
       expect(resultCalculations).toEqual({
         value: {
@@ -219,6 +228,7 @@ describe("shortSellHandler", () => {
               sequenceIndexInSide: 0,
               side: "SELL",
               status: "done",
+              type: "LIMIT",
             },
             {
               id: 2,
@@ -227,6 +237,7 @@ describe("shortSellHandler", () => {
               sequenceIndexInSide: 1,
               side: "SELL",
               status: "done",
+              type: "LIMIT",
             },
           ],
           isCycleOver: true,
@@ -238,13 +249,14 @@ describe("shortSellHandler", () => {
 });
 
 describe("longSellHandler", () => {
-  const normalOrder = {
+  const normalOrder: LimitOrder = {
     id: 1,
     price: "10",
     quantity: "10",
     sequenceIndexInSide: 0,
     side: "BUY",
     status: "active",
+    type: "LIMIT",
   } as const;
 
   describe("Correctness of returned values", () => {
@@ -267,7 +279,7 @@ describe("longSellHandler", () => {
           ],
         },
       };
-      const result = longSellHandler(params);
+      const result = longSellHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -300,7 +312,7 @@ describe("longSellHandler", () => {
           ],
         },
       };
-      const result = longSellHandler(params);
+      const result = longSellHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -322,7 +334,7 @@ describe("longSellHandler", () => {
         },
         grid: { orders: [] },
       };
-      const result = longSellHandler(params);
+      const result = longSellHandler(params, undefined);
       expect(result).toEqual({
         value: {
           error: "longSellHandler: triggerOrder not exist: id:2",
@@ -342,7 +354,7 @@ describe("longSellHandler", () => {
           orders: [{ ...normalOrder, side: "SELL", id: triggerOrderId }],
         },
       };
-      const result = longSellHandler(params);
+      const result = longSellHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -404,12 +416,15 @@ describe("longSellHandler", () => {
     test("should correct mark orders if first sell order done", () => {
       const localOrders = deepCloneObject(orders.slice(0, 4));
 
-      const first = longSellHandler({
-        grid: {
-          orders: localOrders,
+      const first = longSellHandler(
+        {
+          grid: {
+            orders: localOrders,
+          },
+          triggerOrder: { id: 4 },
         },
-        triggerOrder: { id: 4 },
-      });
+        undefined
+      );
 
       expect(first).toEqual({
         value: {
@@ -440,12 +455,15 @@ describe("longSellHandler", () => {
     test("should mark trigger order as done, mark next buy orders as cancel and is CycleOver true if middle order", () => {
       const localOrders = deepCloneObject(orders.slice(0, 5));
 
-      const first = longSellHandler({
-        grid: {
-          orders: localOrders,
+      const first = longSellHandler(
+        {
+          grid: {
+            orders: localOrders,
+          },
+          triggerOrder: { id: 5 },
         },
-        triggerOrder: { id: 5 },
-      });
+        undefined
+      );
 
       expect(first).toEqual({
         value: {
@@ -480,12 +498,15 @@ describe("longSellHandler", () => {
     test("should mark trigger order as done, mark next buy orders as cancel and is CycleOver true if last order", () => {
       const localOrders = deepCloneObject(orders.slice(0, 6));
 
-      const first = longSellHandler({
-        grid: {
-          orders: localOrders,
+      const first = longSellHandler(
+        {
+          grid: {
+            orders: localOrders,
+          },
+          triggerOrder: { id: 6 },
         },
-        triggerOrder: { id: 6 },
-      });
+        undefined
+      );
 
       expect(first).toEqual({
         value: {
@@ -524,13 +545,14 @@ describe("longSellHandler", () => {
 });
 
 describe("longBuyHandler", () => {
-  const normalOrder = {
+  const normalOrder: LimitOrder = {
     id: 1,
     price: "10",
     quantity: "10",
     sequenceIndexInSide: 0,
     side: "BUY",
     status: "active",
+    type: "LIMIT",
   } as const;
 
   const configuration = {
@@ -557,7 +579,7 @@ describe("longBuyHandler", () => {
           ],
         },
       };
-      const result = longBuyHandler(params);
+      const result = longBuyHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -574,6 +596,7 @@ describe("longBuyHandler", () => {
             sequenceIndexInSide: 0,
             side: "SELL",
             status: "active",
+            type: "LIMIT",
           },
         ],
         isCycleOver: false,
@@ -587,7 +610,7 @@ describe("longBuyHandler", () => {
         },
         grid: { configuration, orders: [] },
       };
-      const result = longBuyHandler(params);
+      const result = longBuyHandler(params, undefined);
       expect(result).toEqual({
         value: {
           error: "longBuyHandler: triggerOrder not exist: id:2",
@@ -608,7 +631,7 @@ describe("longBuyHandler", () => {
           orders: [{ ...normalOrder, id: triggerOrderId }],
         },
       };
-      const result = longBuyHandler(params);
+      const result = longBuyHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -647,7 +670,7 @@ describe("longBuyHandler", () => {
           ],
         },
       };
-      const result = longBuyHandler(params);
+      const result = longBuyHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -707,15 +730,18 @@ describe("longBuyHandler", () => {
     ] as const;
 
     test("should correct calculate sell order first", () => {
-      const resultCalculations = longBuyHandler({
-        grid: {
-          configuration: {
-            profit: 1,
+      const resultCalculations = longBuyHandler(
+        {
+          grid: {
+            configuration: {
+              profit: 1,
+            },
+            orders: orders.slice(0, 1),
           },
-          orders: orders.slice(0, 1),
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       expect(resultCalculations).toEqual({
         value: {
@@ -737,29 +763,35 @@ describe("longBuyHandler", () => {
 
     test("should correct calculate sell order second", () => {
       const localOrders = deepCloneObject(orders.slice(0, 3));
-      const first = longBuyHandler({
-        grid: {
-          configuration: {
-            profit: 1,
+      const first = longBuyHandler(
+        {
+          grid: {
+            configuration: {
+              profit: 1,
+            },
+            orders: localOrders,
           },
-          orders: localOrders,
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       if (first.isFail) {
         throw new Error(first.value.error);
       }
 
-      const second = longBuyHandler({
-        grid: {
-          configuration: {
-            profit: 1,
+      const second = longBuyHandler(
+        {
+          grid: {
+            configuration: {
+              profit: 1,
+            },
+            orders: first.value.orders,
           },
-          orders: first.value.orders,
+          triggerOrder: { id: 2 },
         },
-        triggerOrder: { id: 2 },
-      });
+        undefined
+      );
 
       expect(second).toEqual({
         value: {
@@ -787,37 +819,46 @@ describe("longBuyHandler", () => {
 
     test("should correct calculate sell order last", () => {
       const localOrders = deepCloneObject(orders.slice(0, 3));
-      const first = longBuyHandler({
-        grid: {
-          configuration,
-          orders: localOrders,
+      const first = longBuyHandler(
+        {
+          grid: {
+            configuration,
+            orders: localOrders,
+          },
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       if (first.isFail) {
         throw new Error(first.value.error);
       }
 
-      const second = longBuyHandler({
-        grid: {
-          configuration,
-          orders: first.value.orders,
+      const second = longBuyHandler(
+        {
+          grid: {
+            configuration,
+            orders: first.value.orders,
+          },
+          triggerOrder: { id: 2 },
         },
-        triggerOrder: { id: 2 },
-      });
+        undefined
+      );
 
       if (second.isFail) {
         throw new Error(second.value.error);
       }
 
-      const third = longBuyHandler({
-        grid: {
-          configuration,
-          orders: second.value.orders,
+      const third = longBuyHandler(
+        {
+          grid: {
+            configuration,
+            orders: second.value.orders,
+          },
+          triggerOrder: { id: 3 },
         },
-        triggerOrder: { id: 3 },
-      });
+        undefined
+      );
 
       expect(third).toEqual({
         value: {
@@ -850,13 +891,14 @@ describe("longBuyHandler", () => {
 });
 
 describe("longBuyOCOHandler", () => {
-  const normalOrder = {
+  const normalOrder: LimitOrder = {
     id: 1,
     price: "10",
     quantity: "10",
     sequenceIndexInSide: 0,
     side: "BUY",
     status: "active",
+    type: "LIMIT",
   } as const;
 
   const configuration = {
@@ -887,7 +929,7 @@ describe("longBuyOCOHandler", () => {
           ],
         },
       };
-      const result = longBuyOCOHandler(params);
+      const result = longBuyOCOHandler(params, undefined);
 
       expect(result.value).toEqual({
         orders: [
@@ -902,17 +944,21 @@ describe("longBuyOCOHandler", () => {
             price: "10.1",
             quantity: "10",
             sequenceIndexInSide: 0,
+            orderListId: 1,
             side: "SELL",
             status: "active",
+            type: "LIMIT",
           },
           {
             id: 4,
             price: "45",
             quantity: "10",
-            sequenceIndexInSide: 1,
+            orderListId: 1,
+            sequenceIndexInSide: 0,
             side: "SELL",
             status: "active",
             stopPrice: "45",
+            type: "STOP_LIMIT",
           },
         ],
         isCycleOver: false,
@@ -926,7 +972,7 @@ describe("longBuyOCOHandler", () => {
         },
         grid: { configuration, orders: [] },
       };
-      const result = longBuyOCOHandler(params);
+      const result = longBuyOCOHandler(params, undefined);
       expect(result).toEqual({
         value: {
           error: "longBuyOCOHandler: triggerOrder not exist: id:2",
@@ -947,7 +993,7 @@ describe("longBuyOCOHandler", () => {
           orders: [{ ...normalOrder, id: triggerOrderId }],
         },
       };
-      const result = longBuyOCOHandler(params);
+      const result = longBuyOCOHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -986,7 +1032,7 @@ describe("longBuyOCOHandler", () => {
           ],
         },
       };
-      const result = longBuyOCOHandler(params);
+      const result = longBuyOCOHandler(params, undefined);
 
       if (result.isFail) {
         throw new Error("Here fail");
@@ -997,7 +1043,7 @@ describe("longBuyOCOHandler", () => {
   });
 
   describe("Calculations", () => {
-    const orders = [
+    const orders: LimitOrder[] = [
       {
         ...normalOrder,
         id: 1,
@@ -1046,13 +1092,16 @@ describe("longBuyOCOHandler", () => {
     ] as const;
 
     test("should correct calculate sell order first", () => {
-      const resultCalculations = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: orders.slice(0, 1),
+      const resultCalculations = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: orders.slice(0, 1),
+          },
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       expect(resultCalculations).toEqual({
         value: {
@@ -1074,25 +1123,31 @@ describe("longBuyOCOHandler", () => {
 
     test("should correct calculate sell order second", () => {
       const localOrders = deepCloneObject(orders.slice(0, 3));
-      const first = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: localOrders,
+      const first = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: localOrders,
+          },
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       if (first.isFail) {
         throw new Error(first.value.error);
       }
 
-      const second = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: first.value.orders,
+      const second = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: first.value.orders as LimitOrder[],
+          },
+          triggerOrder: { id: 2 },
         },
-        triggerOrder: { id: 2 },
-      });
+        undefined
+      );
 
       expect(second).toEqual({
         value: {
@@ -1120,37 +1175,46 @@ describe("longBuyOCOHandler", () => {
 
     test("should correct calculate sell order last", () => {
       const localOrders = deepCloneObject(orders.slice(0, 3));
-      const first = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: localOrders,
+      const first = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: localOrders,
+          },
+          triggerOrder: { id: 1 },
         },
-        triggerOrder: { id: 1 },
-      });
+        undefined
+      );
 
       if (first.isFail) {
         throw new Error(first.value.error);
       }
 
-      const second = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: first.value.orders,
+      const second = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: first.value.orders as LimitOrder[],
+          },
+          triggerOrder: { id: 2 },
         },
-        triggerOrder: { id: 2 },
-      });
+        undefined
+      );
 
       if (second.isFail) {
         throw new Error(second.value.error);
       }
 
-      const third = longBuyOCOHandler({
-        grid: {
-          configuration,
-          orders: second.value.orders,
+      const third = longBuyOCOHandler(
+        {
+          grid: {
+            configuration,
+            orders: second.value.orders as LimitOrder[],
+          },
+          triggerOrder: { id: 3 },
         },
-        triggerOrder: { id: 3 },
-      });
+        undefined
+      );
 
       expect(third).toEqual({
         value: {
@@ -1173,13 +1237,15 @@ describe("longBuyOCOHandler", () => {
               ...orders[4],
               status: "cancel",
             },
-            orders[5],
+            { ...orders[5], orderListId: 1 },
             {
               ...orders[5],
               stopPrice: "45",
-              sequenceIndexInSide: 3,
+              sequenceIndexInSide: 2,
+              orderListId: 1,
               id: 7,
               price: "45",
+              type: "STOP_LIMIT",
             },
           ],
         },

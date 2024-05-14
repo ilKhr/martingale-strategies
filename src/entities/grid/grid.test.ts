@@ -44,6 +44,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 0,
+        type: "LIMIT",
       },
       {
         id: 2,
@@ -52,6 +53,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 1,
+        type: "LIMIT",
       },
       {
         id: 3,
@@ -60,6 +62,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 2,
+        type: "LIMIT",
       },
       {
         id: 4,
@@ -68,6 +71,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 3,
+        type: "LIMIT",
       },
       {
         id: 5,
@@ -76,6 +80,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 4,
+        type: "LIMIT",
       },
       {
         id: 6,
@@ -84,6 +89,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 5,
+        type: "LIMIT",
       },
       {
         id: 7,
@@ -92,6 +98,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 6,
+        type: "LIMIT",
       },
       {
         id: 8,
@@ -100,6 +107,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 7,
+        type: "LIMIT",
       },
       {
         id: 9,
@@ -108,6 +116,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 8,
+        type: "LIMIT",
       },
       {
         id: 10,
@@ -116,6 +125,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 9,
+        type: "LIMIT",
       },
     ]);
   });
@@ -130,6 +140,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 0,
+        type: "LIMIT",
       },
       {
         id: 2,
@@ -138,6 +149,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 1,
+        type: "LIMIT",
       },
       {
         id: 3,
@@ -146,6 +158,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 2,
+        type: "LIMIT",
       },
       {
         id: 4,
@@ -154,6 +167,7 @@ describe("calculateOrderGrid", () => {
         side: "BUY",
         status: "active",
         sequenceIndexInSide: 3,
+        type: "LIMIT",
       },
     ]);
   });
@@ -169,6 +183,7 @@ describe("calculateOrderGrid", () => {
         side: "SELL",
         status: "active",
         sequenceIndexInSide: 0,
+        type: "LIMIT",
       },
       {
         id: 2,
@@ -177,6 +192,7 @@ describe("calculateOrderGrid", () => {
         side: "SELL",
         status: "active",
         sequenceIndexInSide: 1,
+        type: "LIMIT",
       },
       {
         id: 3,
@@ -185,6 +201,7 @@ describe("calculateOrderGrid", () => {
         side: "SELL",
         status: "active",
         sequenceIndexInSide: 2,
+        type: "LIMIT",
       },
       {
         id: 4,
@@ -193,6 +210,7 @@ describe("calculateOrderGrid", () => {
         side: "SELL",
         status: "active",
         sequenceIndexInSide: 3,
+        type: "LIMIT",
       },
     ]);
   });

@@ -227,7 +227,7 @@ export const sellLongCalculation = ({
 }: {
   priceQuantity: { price: string; quantity: string }[];
   profit: Percent;
-}) => {
+}): { price: string; allQuantity: string } => {
   const { allQuantity, allSum } = priceQuantity.reduce(
     (acc, { price: inputPrice, quantity: inputCount }) => {
       acc.allQuantity = acc.allQuantity.plus(new Big(inputCount));
@@ -246,9 +246,10 @@ export const sellLongCalculation = ({
   const percentProfit = getProfitPercent(profit);
 
   const sumProfit = allSum.times(new Big(percentProfit));
+
   const price = sumProfit.div(allQuantity);
 
-  return { price, allQuantity };
+  return { price: price.toString(), allQuantity: allQuantity.toString() };
 };
 
 export const stopLimitPriceCalculation = (

@@ -11,13 +11,14 @@ import {
 export const deepCloneObject = <T>(data: T): T =>
   JSON.parse(JSON.stringify(data));
 
-export const getOrderWithMaxId = (orders: Order[]): Order | undefined =>
-  orders.reduce<Order | undefined>((maxOrder, currentOrder) => {
+export const getOrderWithMaxId = (orders: Order[]): Order | undefined => {
+  return orders.reduce<Order | undefined>((maxOrder, currentOrder) => {
     if (!maxOrder || maxOrder.id < currentOrder.id) {
       maxOrder = currentOrder;
     }
     return maxOrder;
   }, undefined);
+};
 
 export const getOrderWithMaxSequenceIndex = (
   orders: Order[],

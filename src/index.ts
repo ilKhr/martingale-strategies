@@ -1,19 +1,13 @@
-import { calculateOrderGrid } from "./entities/grid/grid";
-import { CreateGridParams, Grid } from "./entities/grid/grid.types";
-import { onOrderDoneHandler } from "./entities/order/order";
-import { OnOrderDoneParams } from "./entities/order/order.types";
+import { version } from "../package.json";
+import { calculateOrderGrid } from "src/entities/grid/grid";
+import { onOrderDoneHandler } from "src/entities/order/order";
+import { MartingaleStrategiesType } from "src/index.type";
 
-type MartingaleStrategies = {
-  createGrid: (params: CreateGridParams) => Grid;
-  onOrderDone: (params: OnOrderDoneParams) => {
-    isCycleOver: boolean;
-    grid: Grid;
-  };
-};
+console.log(`Version ${version} start`);
 
-const MartingaleStrategies: MartingaleStrategies = {
+export const MartingaleStrategies: MartingaleStrategiesType = (callbacks) => ({
   createGrid: (params) => {
-    const orders = calculateOrderGrid(params);
+    const orders = calculateOrderGrid(params, callbacks?.createOrder);
     return {
       configuration: {
         countOrders: params.countOrders,
@@ -27,7 +21,7 @@ const MartingaleStrategies: MartingaleStrategies = {
     };
   },
   onOrderDone: (params) => {
-    const result = onOrderDoneHandler(params);
+    const result = onOrderDoneHandler(params, callbacks);
 
     if (result.isFail) {
       throw new Error(result.value.error);
@@ -35,4 +29,4 @@ const MartingaleStrategies: MartingaleStrategies = {
 
     return result.value;
   },
-};
+});
