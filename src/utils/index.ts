@@ -1,4 +1,4 @@
-import { Order } from "src/entities/order/order";
+import { Order } from "../entities/order/order";
 import { ID, Side, TradingAlgorithm } from "../types";
 import {
   badRequestError,

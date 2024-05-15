@@ -15,8 +15,8 @@ import {
   successWrapper,
 } from "../../utils/result";
 
-import { ID, Side } from "src/types";
-import { Result, BaseError } from "src/utils/result";
+import { ID, Side } from "../../types";
+import { Result, BaseError } from "../../utils/result";
 import { Grid } from "../grid/grid";
 
 type OrderType = "OCO" | "LIMIT" | "STOP_LIMIT";
