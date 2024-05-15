@@ -1,7 +1,28 @@
 import { version } from "../package.json";
-import { calculateOrderGrid } from "src/entities/grid/grid";
-import { onOrderDoneHandler } from "src/entities/order/order";
-import { MartingaleStrategiesType } from "src/index.type";
+import {
+  calculateOrderGrid,
+  CreateGridParams,
+  Grid,
+} from "src/entities/grid/grid";
+import {
+  BaseOrderActionsCallbacks,
+  CallbackBaseOrderAction,
+  onOrderDoneHandler,
+  OnOrderDoneParams,
+} from "src/entities/order/order";
+
+export type MartingaleStrategiesType = (
+  callbacks: BaseOrderActionsCallbacks | undefined
+) => {
+  createGrid: (
+    params: CreateGridParams,
+    createOrderCallback?: CallbackBaseOrderAction
+  ) => Grid;
+  onOrderDone: (params: OnOrderDoneParams) => {
+    isCycleOver: boolean;
+    grid: Grid;
+  };
+};
 
 console.log(`Version ${version} start`);
 

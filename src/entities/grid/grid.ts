@@ -4,9 +4,51 @@ import {
   longCalculation,
   shortCalculation,
 } from "../../utils/formulas";
-import { createAndAddOrder } from "../order/order";
-import { LimitOrder } from "../order/order.types";
-import { CalculateOrderGridType } from "./grid.types";
+import {
+  CallbackBaseOrderAction,
+  createAndAddOrder,
+  LimitOrder,
+  Order,
+} from "../order/order";
+
+import { Percent, TradingAlgorithm } from "../../types";
+
+export type Grid = {
+  orders: Order[];
+  configuration: {
+    tradingAlgorithm: TradingAlgorithm;
+    countOrders: number;
+    profit: number;
+    overlap: number;
+    startPrice: string;
+    stopLoss?: number;
+  };
+};
+
+export type CreateGridParams = {
+  countOrders: number;
+  deposit: string;
+  martingale: Percent;
+  overlap: Percent;
+  currencyPrice: string;
+  profit: Percent;
+  tradingAlgorithm: TradingAlgorithm;
+  startPrice: string;
+  stopLoss?: number;
+};
+
+export type CalculateOrderGridType = (
+  params: {
+    countOrders: number;
+    deposit: string;
+    martingale: Percent;
+    overlap: Percent;
+    currencyPrice: string;
+    profit: Percent;
+    tradingAlgorithm: TradingAlgorithm;
+  },
+  createOrderCallback?: CallbackBaseOrderAction
+) => LimitOrder[];
 
 export const calculateOrderGrid: CalculateOrderGridType = (
   params,

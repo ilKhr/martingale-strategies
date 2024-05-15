@@ -1,6 +1,6 @@
 import { describe, vi, test, expect, afterEach } from "vitest";
-import { MartingaleStrategies } from "src";
-import { Grid } from "./entities/grid/grid.types";
+import { MartingaleStrategies } from "./";
+import { Grid } from "./entities/grid/grid";
 
 const createOrder = vi.fn();
 const cancelOrder = vi.fn();

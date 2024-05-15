@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { calculateOrderGrid } from "./grid";
-import { CalculateOrderGridType } from "./grid.types";
+import { calculateOrderGrid, CalculateOrderGridType } from "./grid";
 
 const normalOrderGridParamObjectLong: Parameters<CalculateOrderGridType>[0] = {
   countOrders: 10,
