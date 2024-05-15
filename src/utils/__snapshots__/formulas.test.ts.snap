@@ -1,0 +1,91 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Long trading formulas > longCalculation work correct with 10 elements 1`] = `
+[
+  {
+    "priceWithIntent": "95",
+    "quantity": "0.83689026279428100526",
+  },
+  {
+    "priceWithIntent": "90",
+    "quantity": "0.92755337459699478083",
+  },
+  {
+    "priceWithIntent": "85",
+    "quantity": "1.03122110469901184457",
+  },
+  {
+    "priceWithIntent": "80",
+    "quantity": "1.1504560449298350891",
+  },
+  {
+    "priceWithIntent": "75",
+    "quantity": "1.28851077032141529979",
+  },
+  {
+    "priceWithIntent": "70",
+    "quantity": "1.44957461661159221227",
+  },
+  {
+    "priceWithIntent": "65",
+    "quantity": "1.63913437416849273233",
+  },
+  {
+    "priceWithIntent": "60",
+    "quantity": "1.86451535061666048303",
+  },
+  {
+    "priceWithIntent": "55",
+    "quantity": "2.13571758343362928056",
+  },
+  {
+    "priceWithIntent": "50",
+    "quantity": "2.46675380886584181904",
+  },
+]
+`;
+
+exports[`Short trading formulas > shortCalculationData work correct with 10 elements 1`] = `
+[
+  {
+    "priceWithIntent": "105",
+    "quantity": "79.50457496545669549981",
+  },
+  {
+    "priceWithIntent": "110",
+    "quantity": "83.4798037137295302748005",
+  },
+  {
+    "priceWithIntent": "115",
+    "quantity": "87.653793899416006788540525",
+  },
+  {
+    "priceWithIntent": "120",
+    "quantity": "92.03648359438680712796755125",
+  },
+  {
+    "priceWithIntent": "125",
+    "quantity": "96.6383077741061474843659288125",
+  },
+  {
+    "priceWithIntent": "130",
+    "quantity": "101.470223162811454858584225253125",
+  },
+  {
+    "priceWithIntent": "135",
+    "quantity": "106.54373432095202760151343651578125",
+  },
+  {
+    "priceWithIntent": "140",
+    "quantity": "111.8709210369996289815891083415703125",
+  },
+  {
+    "priceWithIntent": "145",
+    "quantity": "117.464467088849610430668563758648828125",
+  },
+  {
+    "priceWithIntent": "150",
+    "quantity": "123.33769044329209095220199194658126953125",
+  },
+]
+`;
