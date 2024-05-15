@@ -4,7 +4,7 @@
   "description": "Get martingale grid and triggered on orders",
   "author": "Khorishko Ilya",
   "license": "MIT",
-  "repository": "",
+  "repository": "git+https://github.com/ilKhr/martingale-strategies.git",
   "devDependencies": {
     "@types/big.js": "^6.2.2",
     "@types/node": "^20.12.8",
