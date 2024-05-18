@@ -230,8 +230,8 @@ export const sellLongCalculation = ({
 }): { price: string; allQuantity: string } => {
   const { allQuantity, allSum } = priceQuantity.reduce(
     (acc, { price: inputPrice, quantity: inputCount }) => {
-      acc.allQuantity = acc.allQuantity.plus(new Big(inputCount));
-      acc.allSum = acc.allSum.plus(
+      acc.allQuantity = new Big(acc.allQuantity).plus(new Big(inputCount));
+      acc.allSum = new Big(acc.allSum).plus(
         new Big(inputPrice).times(new Big(inputCount))
       );
 
