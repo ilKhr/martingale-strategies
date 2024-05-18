@@ -904,7 +904,7 @@ describe("longBuyOCOHandler", () => {
     countOrders: 3,
     overlap: 50,
     profit: 1,
-    startPrice: "100",
+    currencyPriceInStart: "100",
     stopLoss: 5,
   };
 

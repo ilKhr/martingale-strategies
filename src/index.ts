@@ -26,14 +26,17 @@ export type MartingaleStrategiesType = (
 
 export const MartingaleStrategies: MartingaleStrategiesType = (callbacks) => ({
   createGrid: (params) => {
-    const orders = calculateOrderGrid(params, callbacks?.createOrder);
+    const orders = calculateOrderGrid(
+      { ...params, currencyPrice: params.currencyPriceInStart },
+      callbacks?.createOrder
+    );
     return {
       configuration: {
         countOrders: params.countOrders,
         profit: params.profit,
         tradingAlgorithm: params.tradingAlgorithm,
         overlap: params.overlap,
-        startPrice: params.startPrice,
+        currencyPriceInStart: params.currencyPriceInStart,
         stopLoss: params.stopLoss,
       },
       orders,

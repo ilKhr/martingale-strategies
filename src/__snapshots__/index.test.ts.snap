@@ -7,7 +7,7 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       "countOrders": 10,
       "overlap": 50,
       "profit": 1,
-      "startPrice": "100",
+      "currencyPriceInStart": "100",
       "stopLoss": 5,
       "tradingAlgorithm": "LONG",
     },

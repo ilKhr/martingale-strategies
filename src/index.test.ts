@@ -20,7 +20,7 @@ describe("MartingaleStrategies", () => {
       martingale: 5,
       overlap: 50,
       profit: 1,
-      startPrice: "100",
+      currencyPriceInStart: "100",
       tradingAlgorithm: "LONG",
       stopLoss: 5,
     } as const;
@@ -49,7 +49,7 @@ describe("MartingaleStrategies", () => {
           profit: 1,
           tradingAlgorithm: "LONG",
           overlap: 50,
-          startPrice: "100",
+          currencyPriceInStart: "100",
           stopLoss: 5,
         },
         orders: [
@@ -180,7 +180,7 @@ describe("MartingaleStrategies", () => {
       martingale: 5,
       overlap: 50,
       profit: 1,
-      startPrice: "100",
+      currencyPriceInStart: "100",
       tradingAlgorithm: "LONG",
       stopLoss: 5,
     } as const;

@@ -111,7 +111,7 @@ export type LongBuyOCOParams = {
       stopLoss: Exclude<Grid["configuration"]["stopLoss"], undefined>;
       countOrders: Grid["configuration"]["countOrders"];
       overlap: Grid["configuration"]["overlap"];
-      startPrice: Grid["configuration"]["startPrice"];
+      currencyPriceInStart: Grid["configuration"]["currencyPriceInStart"];
     };
     orders: LimitOrder[];
   };
@@ -544,7 +544,7 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
     const stopLossPrice = stopLimitPriceCalculation(
       params.grid.configuration.overlap,
       params.grid.configuration.stopLoss,
-      params.grid.configuration.startPrice
+      params.grid.configuration.currencyPriceInStart
     );
 
     createAndAddOCOOrder(
@@ -604,7 +604,7 @@ export const onOrderDoneHandler: OnOrderDoneHandlerType = (
           countOrders: params.grid.configuration.countOrders,
           profit: params.grid.configuration.profit,
           overlap: params.grid.configuration.overlap,
-          startPrice: params.grid.configuration.startPrice,
+          currencyPriceInStart: params.grid.configuration.currencyPriceInStart,
           stopLoss: params.grid.configuration.stopLoss as number,
         },
         orders: params.grid.orders as LimitOrder[],

@@ -20,7 +20,7 @@ export type Grid = {
     countOrders: number;
     profit: number;
     overlap: number;
-    startPrice: string;
+    currencyPriceInStart: string;
     stopLoss?: number;
   };
 };
@@ -30,10 +30,9 @@ export type CreateGridParams = {
   deposit: string;
   martingale: Percent;
   overlap: Percent;
-  currencyPrice: string;
+  currencyPriceInStart: string;
   profit: Percent;
   tradingAlgorithm: TradingAlgorithm;
-  startPrice: string;
   stopLoss?: number;
 };
 
