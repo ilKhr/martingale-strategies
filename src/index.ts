@@ -10,24 +10,29 @@ import {
   OnOrderDoneParams,
 } from "./entities/order/order";
 
-export type MartingaleStrategiesType = (
-  callbacks: BaseOrderActionsCallbacks | undefined
-) => {
+export type MartingaleStrategiesType = () => {
   createGrid: (
     params: CreateGridParams,
-
-    createOrderCallback?: BaseOrderActionsCallbacks["createOrder"]
+    callbacks?: {
+      createOrder: BaseOrderActionsCallbacks["createOrder"];
+    }
   ) => Grid;
-  onOrderDone: (params: OnOrderDoneParams) => {
+  onOrderDone: (
+    params: OnOrderDoneParams,
+    callbacks?: BaseOrderActionsCallbacks
+  ) => {
     isCycleOver: boolean;
     grid: Grid;
   };
 };
 
-export const MartingaleStrategies: MartingaleStrategiesType = (callbacks) => ({
-  createGrid: (params) => {
+export const MartingaleStrategies: MartingaleStrategiesType = () => ({
+  createGrid: (params, callbacks) => {
     const orders = calculateOrderGrid(
-      { ...params, currencyPrice: params.currencyPriceInStart },
+      {
+        ...params,
+        currencyPrice: params.currencyPriceInStart,
+      },
       callbacks?.createOrder
     );
     return {
@@ -42,7 +47,7 @@ export const MartingaleStrategies: MartingaleStrategiesType = (callbacks) => ({
       orders,
     };
   },
-  onOrderDone: (params) => {
+  onOrderDone: (params, callbacks) => {
     const result = onOrderDoneHandler(params, callbacks);
 
     if (result.isFail) {

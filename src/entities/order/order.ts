@@ -131,8 +131,6 @@ export type ReactiveHandlerType<T, OrderType extends Order | LimitOrder> = (
 export type OnOrderDoneParams = {
   triggerOrderId: LimitOrder["id"];
   grid: Grid;
-  cancelOrder?: (id: LimitOrder["id"]) => LimitOrder["id"];
-  createOrder?: (params: CreateOrderParams) => LimitOrder;
 };
 
 export type CallbackBaseOrderAction<

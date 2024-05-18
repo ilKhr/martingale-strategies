@@ -25,22 +25,25 @@ describe("MartingaleStrategies", () => {
       stopLoss: 5,
     } as const;
 
-    const instance = MartingaleStrategies({
-      createOrder,
-      cancelOrder,
-      createOcoOrder,
-      markOrderAsDone,
-    });
+    const instance = MartingaleStrategies();
 
-    const grid = instance.createGrid(configuration);
+    const grid = instance.createGrid(configuration, { createOrder });
 
-    const first = instance.onOrderDone({
-      grid: {
-        configuration: grid.configuration,
-        orders: grid.orders,
+    const first = instance.onOrderDone(
+      {
+        grid: {
+          configuration: grid.configuration,
+          orders: grid.orders,
+        },
+        triggerOrderId: 1,
       },
-      triggerOrderId: 1,
-    });
+      {
+        cancelOrder,
+        createOcoOrder,
+        createOrder,
+        markOrderAsDone,
+      }
+    );
 
     expect(first).toEqual({
       grid: {
@@ -185,14 +188,11 @@ describe("MartingaleStrategies", () => {
       stopLoss: 5,
     } as const;
 
-    const instance = MartingaleStrategies({
-      createOrder,
-      cancelOrder,
-      createOcoOrder,
-      markOrderAsDone,
-    });
+    const instance = MartingaleStrategies();
 
-    const grid = instance.createGrid(configuration);
+    const grid = instance.createGrid(configuration, {
+      createOrder,
+    });
 
     let result:
       | {
@@ -202,10 +202,18 @@ describe("MartingaleStrategies", () => {
       | undefined = undefined;
 
     for (let i = 1; i < 11; i++) {
-      result = instance.onOrderDone({
-        grid: result?.grid || grid,
-        triggerOrderId: i,
-      });
+      result = instance.onOrderDone(
+        {
+          grid: result?.grid || grid,
+          triggerOrderId: i,
+        },
+        {
+          cancelOrder,
+          createOcoOrder,
+          createOrder,
+          markOrderAsDone,
+        }
+      );
     }
 
     expect(result).toMatchSnapshot();
