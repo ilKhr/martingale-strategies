@@ -5,9 +5,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
   "grid": {
     "configuration": {
       "countOrders": 10,
+      "currencyPriceInStart": "100",
       "overlap": 50,
       "profit": 1,
-      "currencyPriceInStart": "100",
       "stopLoss": 5,
       "tradingAlgorithm": "LONG",
     },
