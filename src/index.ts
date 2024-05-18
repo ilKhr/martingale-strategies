@@ -15,7 +15,8 @@ export type MartingaleStrategiesType = (
 ) => {
   createGrid: (
     params: CreateGridParams,
-    createOrderCallback?: CallbackBaseOrderAction
+
+    createOrderCallback?: BaseOrderActionsCallbacks["createOrder"]
   ) => Grid;
   onOrderDone: (params: OnOrderDoneParams) => {
     isCycleOver: boolean;

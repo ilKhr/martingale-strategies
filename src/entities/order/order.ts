@@ -135,20 +135,31 @@ export type OnOrderDoneParams = {
   createOrder?: (params: CreateOrderParams) => LimitOrder;
 };
 
-export type CallbackBaseOrderAction = (
-  param: LimitOrder | StopLimitOrder | OcoGroupOrders
-) => unknown;
+export type CallbackBaseOrderAction<
+  ParamsType extends LimitOrder | StopLimitOrder | OcoGroupOrders
+> = (param: ParamsType) => unknown;
 
-export type BasicOrderActions<Params, ReturnValue> = (
+export type BaseOrderActionsCallbacks = {
+  createOrder: CallbackBaseOrderAction<Order>;
+  cancelOrder: CallbackBaseOrderAction<Order>;
+  markOrderAsDone: CallbackBaseOrderAction<Order>;
+  createOcoOrder: CallbackBaseOrderAction<OcoGroupOrders>;
+};
+
+export type BasicOrderAction<
+  Params,
+  ReturnValue,
+  Callback extends BaseOrderActionsCallbacks[keyof BaseOrderActionsCallbacks]
+> = (
   params: Params,
   grid: { orders: Grid["orders"] },
-  callback: CallbackBaseOrderAction | undefined
+  callback: Callback | undefined
 ) => ReturnValue;
 
-export type BaseOrderActionsCallbacks = Record<
-  "createOrder" | "cancelOrder" | "createOcoOrder" | "markOrderAsDone",
-  CallbackBaseOrderAction
->;
+// export type BaseOrderActionsCallbacks = Record<
+//   "createOrder" | "cancelOrder" | "createOcoOrder" | "markOrderAsDone",
+//   CallbackBaseOrderAction
+// >;
 
 export type OnOrderDoneHandlerType = (
   params: OnOrderDoneParams,
@@ -169,9 +180,10 @@ const hasNotOcoOrder = (orders: Order[]): orders is LimitOrder[] =>
 /**
  * Mutable grid
  */
-export const createAndAddOrder: BasicOrderActions<
+export const createAndAddOrder: BasicOrderAction<
   CreateOrderParams,
-  LimitOrder["id"]
+  LimitOrder["id"],
+  BaseOrderActionsCallbacks["createOrder"]
 > = (params, grid, callback): LimitOrder["id"] => {
   const maxIdOrder = getOrderWithMaxId(grid.orders);
   const maxSequenceIndexOrder = getOrderWithMaxSequenceIndex(
@@ -199,9 +211,10 @@ export const createAndAddOrder: BasicOrderActions<
 /**
  * Mutable grid
  */
-const createAndAddOCOOrder: BasicOrderActions<
+const createAndAddOCOOrder: BasicOrderAction<
   CreateOCOOrderParams,
-  [LimitOrder["id"], StopLimitOrder["id"]]
+  [LimitOrder["id"], StopLimitOrder["id"]],
+  BaseOrderActionsCallbacks["createOcoOrder"]
 > = (params, grid, callback) => {
   if (!hasNotOcoOrder(grid.orders)) {
     throw new Error("OCO order allready created in this grid");
@@ -266,11 +279,11 @@ const createAndAddOCOOrder: BasicOrderActions<
 /**
  * Mutable grid
  */
-const cancelOrder: BasicOrderActions<Order["id"], Order | undefined> = (
-  id,
-  grid,
-  callback
-) => {
+const cancelOrder: BasicOrderAction<
+  Order["id"],
+  Order | undefined,
+  BaseOrderActionsCallbacks["cancelOrder"]
+> = (id, grid, callback) => {
   const foundIndex = grid.orders.findIndex((order) => order.id === id);
 
   if (foundIndex === -1) {
@@ -287,11 +300,11 @@ const cancelOrder: BasicOrderActions<Order["id"], Order | undefined> = (
 /**
  * Mutable grid
  */
-const markAsDoneOrder: BasicOrderActions<Order["id"], Order | undefined> = (
-  id,
-  grid,
-  callback
-) => {
+const markAsDoneOrder: BasicOrderAction<
+  Order["id"],
+  Order | undefined,
+  BaseOrderActionsCallbacks["createOrder"]
+> = (id, grid, callback) => {
   const foundIndex = grid.orders.findIndex((order) => order.id === id);
 
   if (foundIndex === -1) {

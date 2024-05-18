@@ -1,11 +1,11 @@
 import {
-  LongCalculationPayload,
-  ShortCalculationPayload,
   longCalculation,
+  LongCalculationPayload,
   shortCalculation,
+  ShortCalculationPayload,
 } from "../../utils/formulas";
 import {
-  CallbackBaseOrderAction,
+  BaseOrderActionsCallbacks,
   createAndAddOrder,
   LimitOrder,
   Order,
@@ -47,7 +47,7 @@ export type CalculateOrderGridType = (
     profit: Percent;
     tradingAlgorithm: TradingAlgorithm;
   },
-  createOrderCallback?: CallbackBaseOrderAction
+  createOrderCallback?: BaseOrderActionsCallbacks["createOrder"]
 ) => LimitOrder[];
 
 export const calculateOrderGrid: CalculateOrderGridType = (
