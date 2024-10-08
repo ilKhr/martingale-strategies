@@ -2,8 +2,8 @@ import {
   deepCloneObject,
   determineOrderAction,
   findOrderById,
+  getNextSequenceIndexByRules,
   getOrderWithMaxId,
-  getOrderWithMaxSequenceIndex,
 } from "../../utils";
 import {
   sellLongCalculation,
@@ -184,7 +184,7 @@ export const createAndAddOrder: BasicOrderAction<
   BaseOrderActionsCallbacks["createOrder"]
 > = (params, grid, callback): LimitOrder["id"] => {
   const maxIdOrder = getOrderWithMaxId(grid.orders);
-  const maxSequenceIndexOrder = getOrderWithMaxSequenceIndex(
+  const nextSequenceIndex = getNextSequenceIndexByRules(
     grid.orders,
     params.side
   );
@@ -195,7 +195,7 @@ export const createAndAddOrder: BasicOrderAction<
     id: newId,
     status: "active",
     type: "LIMIT",
-    sequenceIndexInSide: (maxSequenceIndexOrder?.sequenceIndexInSide ?? -1) + 1,
+    sequenceIndexInSide: nextSequenceIndex,
     ...params,
   };
 
@@ -219,13 +219,12 @@ const createAndAddOCOOrder: BasicOrderAction<
   }
 
   const maxIdOrder = getOrderWithMaxId(grid.orders);
-  const maxSequenceIndexOrder = getOrderWithMaxSequenceIndex(
+  const nextSequenceIndex = getNextSequenceIndexByRules(
     grid.orders,
     params.side
   );
 
-  const sequenceIndexInSide =
-    (maxSequenceIndexOrder?.sequenceIndexInSide ?? -1) + 1;
+  const sequenceIndexInSide = nextSequenceIndex;
 
   const limitOrderId = (maxIdOrder?.id ?? 0) + 1;
   const stopLimitOrderId = limitOrderId + 1;
