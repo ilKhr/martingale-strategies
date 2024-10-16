@@ -1,6 +1,6 @@
 {
   "name": "martingale-strategies",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Get martingale grid and triggered on orders",
   "author": "Khorishko Ilya",
   "license": "MIT",
