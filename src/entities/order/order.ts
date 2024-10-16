@@ -21,27 +21,39 @@ import { Grid } from "../grid/grid";
 
 type OrderType = "OCO" | "LIMIT" | "STOP_LIMIT";
 
+type OcoOrderTypes = "limit" | "limit-by-stop-limit" | "stop-limit";
+
 export type LimitOrder = {
   id: ID;
   quantity: string;
   price: string;
   side: Side;
   type: Extract<OrderType, "LIMIT">;
-  status: "active" | "done" | "cancel";
+  status: "active" | "done" | "canceled";
   sequenceIndexInSide: number;
-  orderListId?: number;
+  oco:
+    | {
+        isOco: false;
+      }
+    | {
+        isOco: true;
+        ocoType: Extract<OcoOrderTypes, "limit" | "limit-by-stop-limit">;
+      };
 };
 
 export type StopLimitOrder = {
   id: ID;
   quantity: string;
   price: string;
-  stopPrice: string;
   type: Extract<OrderType, "STOP_LIMIT">;
   side: Side;
-  status: "active" | "done" | "cancel";
+  status: "active" | "done" | "canceled";
   sequenceIndexInSide: number;
-  orderListId?: number;
+  oco: {
+    isOco: true;
+    ocoType: Extract<OcoOrderTypes, "stop-limit">;
+    stopPrice: string;
+  };
 };
 
 export type Order = LimitOrder | StopLimitOrder;
@@ -49,10 +61,7 @@ export type Order = LimitOrder | StopLimitOrder;
 export type OcoGroupOrders = {
   type: Extract<OrderType, "OCO">;
   sequenceIndexInSide: number;
-  orders: [
-    LimitOrder & { orderListId: number },
-    StopLimitOrder & { orderListId: number }
-  ];
+  orders: [LimitOrder, StopLimitOrder];
 };
 
 export type CreateOrderParams = {
@@ -113,7 +122,16 @@ export type LongBuyOCOParams = {
       overlap: Grid["configuration"]["overlap"];
       currencyPriceInStart: Grid["configuration"]["currencyPriceInStart"];
     };
-    orders: LimitOrder[];
+    orders: (LimitOrder | StopLimitOrder)[];
+  };
+};
+
+export type LongSellOCOParams = {
+  triggerOrder: {
+    id: LimitOrder["id"];
+  };
+  grid: {
+    orders: (LimitOrder | StopLimitOrder)[];
   };
 };
 
@@ -139,6 +157,7 @@ export type CallbackBaseOrderAction<
 
 export type BaseOrderActionsCallbacks = {
   createOrder: CallbackBaseOrderAction<Order>;
+  createOrderLimitByStopLimit: CallbackBaseOrderAction<Order>;
   cancelOrder: CallbackBaseOrderAction<Order>;
   markOrderAsDone: CallbackBaseOrderAction<Order>;
   createOcoOrder: CallbackBaseOrderAction<OcoGroupOrders>;
@@ -154,11 +173,6 @@ export type BasicOrderAction<
   callback: Callback | undefined
 ) => ReturnValue;
 
-// export type BaseOrderActionsCallbacks = Record<
-//   "createOrder" | "cancelOrder" | "createOcoOrder" | "markOrderAsDone",
-//   CallbackBaseOrderAction
-// >;
-
 export type OnOrderDoneHandlerType = (
   params: OnOrderDoneParams,
   callbacks: BaseOrderActionsCallbacks | undefined
@@ -169,10 +183,6 @@ export type OnOrderDoneHandlerType = (
   },
   BaseError
 >;
-
-// Type guard
-const hasNotOcoOrder = (orders: Order[]): orders is LimitOrder[] =>
-  orders.every((order) => !("orderListId" in order));
 
 // Base Order Actions
 /**
@@ -196,6 +206,36 @@ export const createAndAddOrder: BasicOrderAction<
     status: "active",
     type: "LIMIT",
     sequenceIndexInSide: nextSequenceIndex,
+    oco: { isOco: false },
+    ...params,
+  };
+
+  grid.orders.push(newOrder);
+
+  callback && callback(newOrder);
+
+  return newId;
+};
+
+export const createAndAddOrderLimitByStopLimit: BasicOrderAction<
+  CreateOrderParams,
+  LimitOrder["id"],
+  BaseOrderActionsCallbacks["createOrderLimitByStopLimit"]
+> = (params, grid, callback): LimitOrder["id"] => {
+  const maxIdOrder = getOrderWithMaxId(grid.orders);
+  const nextSequenceIndex = getNextSequenceIndexByRules(
+    grid.orders,
+    params.side
+  );
+
+  const newId = (maxIdOrder?.id ?? 0) + 1;
+
+  const newOrder: LimitOrder = {
+    id: newId,
+    status: "active",
+    type: "LIMIT",
+    sequenceIndexInSide: nextSequenceIndex,
+    oco: { isOco: true, ocoType: "limit-by-stop-limit" },
     ...params,
   };
 
@@ -214,7 +254,7 @@ const createAndAddOCOOrder: BasicOrderAction<
   [LimitOrder["id"], StopLimitOrder["id"]],
   BaseOrderActionsCallbacks["createOcoOrder"]
 > = (params, grid, callback) => {
-  if (!hasNotOcoOrder(grid.orders)) {
+  if (grid.orders.some((order) => order.oco.isOco)) {
     throw new Error("OCO order allready created in this grid");
   }
 
@@ -229,8 +269,6 @@ const createAndAddOCOOrder: BasicOrderAction<
   const limitOrderId = (maxIdOrder?.id ?? 0) + 1;
   const stopLimitOrderId = limitOrderId + 1;
 
-  const orderListId = 1;
-
   const limitOrder: OcoGroupOrders["orders"]["0"] = {
     id: limitOrderId,
     status: "active",
@@ -239,7 +277,10 @@ const createAndAddOCOOrder: BasicOrderAction<
     type: "LIMIT",
     quantity: params.quantity,
     side: params.side,
-    orderListId,
+    oco: {
+      isOco: true,
+      ocoType: "limit",
+    },
   };
 
   const stopLimitOrder: OcoGroupOrders["orders"]["1"] = {
@@ -250,8 +291,11 @@ const createAndAddOCOOrder: BasicOrderAction<
     type: "STOP_LIMIT",
     quantity: params.quantity,
     side: params.side,
-    stopPrice: params.stopPrice,
-    orderListId,
+    oco: {
+      isOco: true,
+      ocoType: "stop-limit",
+      stopPrice: params.stopPrice,
+    },
   };
 
   const ocoGroupOrders: OcoGroupOrders = {
@@ -289,7 +333,7 @@ const cancelOrder: BasicOrderAction<
 
   callback && callback(grid.orders[foundIndex]!);
 
-  grid.orders[foundIndex]!.status = "cancel";
+  grid.orders[foundIndex]!.status = "canceled";
 
   return grid.orders[foundIndex];
 };
@@ -469,7 +513,12 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
   params,
   callbacks
 ) => {
-  if (!hasNotOcoOrder(params.grid.orders)) {
+  /*
+  If done we have first limit, then we do done limit and cancelled stop limit
+  If done we have stopLimit, then we do cancelled Limit and create a limit-by-stop-limit-order (important, this must be a separate handler).
+  If the limit-by-stop-limit-order is triggered, we just mark it as done
+  */
+  if (params.grid.orders.some((order) => order.oco.isOco)) {
     throw new Error("OCO order allready created in this grid");
   }
 
@@ -499,10 +548,6 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
     );
   }
 
-  const isTriggerLastOrder =
-    params.grid.configuration.countOrders ===
-    triggerOrder.sequenceIndexInSide + 1; // because sequence index start from 0
-
   const activeSellOrder = newOrders.find(
     (order) => order.side === "SELL" && order.status === "active"
   );
@@ -526,6 +571,10 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
   });
 
   const side = "SELL";
+
+  const isTriggerLastOrder =
+    params.grid.configuration.countOrders ===
+    triggerOrder.sequenceIndexInSide + 1; // because sequence index start from 0
 
   if (!isTriggerLastOrder) {
     createAndAddOrder(
@@ -559,6 +608,106 @@ export const longBuyOCOHandler: ReactiveHandlerType<LongBuyOCOParams, Order> = (
   return successWrapper({ isCycleOver: false, orders: newOrders });
 };
 
+export const longSellOCOHandler: ReactiveHandlerType<
+  LongSellOCOParams,
+  Order
+> = (params, callbacks) => {
+  if (!params.grid.orders.some((order) => order.oco.isOco)) {
+    throw new Error("OCO order not exists in this grid");
+  }
+
+  const newOrders = deepCloneObject(params.grid.orders);
+
+  markAsDoneOrder(
+    params.triggerOrder.id,
+    { orders: newOrders },
+    callbacks?.markOrderAsDone
+  );
+
+  const triggerOrder = findOrderById(newOrders, params.triggerOrder.id);
+
+  if (!triggerOrder) {
+    return failWrapper(
+      badRequestError(
+        `longBuyOCOHandler: triggerOrder not exist: id:${params.triggerOrder.id}`
+      )
+    );
+  }
+
+  if (triggerOrder.side !== "SELL") {
+    return failWrapper(
+      badRequestError(
+        `longBuyOCOHandler: triggerOrder side is: ${triggerOrder.side}, but expected \"SELL\"`
+      )
+    );
+  }
+
+  if (!triggerOrder.oco.isOco) {
+    throw new Error(`Trigger order should be OCO`);
+  }
+
+  const table: Record<OcoOrderTypes, () => boolean> = {
+    "stop-limit": () => {
+      const limitOrder = newOrders.find(
+        (order) => order.oco.isOco && order.oco.ocoType === "limit"
+      );
+
+      const stopLimit = newOrders.find<StopLimitOrder>(
+        (order): order is StopLimitOrder =>
+          order.oco.isOco && order.oco.ocoType === "stop-limit"
+      );
+
+      if (!limitOrder) {
+        throw new Error("Limit order not exists in OCO orders");
+      }
+
+      if (!stopLimit) {
+        throw new Error("Stop limit order not exists in OCO orders");
+      }
+
+      cancelOrder(limitOrder.id, { orders: newOrders }, callbacks?.cancelOrder);
+
+      const side = "SELL";
+
+      createAndAddOrderLimitByStopLimit(
+        // Limit by stop limit
+        {
+          price: stopLimit.oco.stopPrice,
+          quantity: stopLimit.quantity,
+          side,
+        },
+        { orders: newOrders },
+        callbacks?.createOrderLimitByStopLimit
+      );
+
+      // is cycle over
+      return false;
+    },
+    limit: () => {
+      const stopLimit = newOrders.find(
+        (order) => order.oco.isOco && order.oco.ocoType === "stop-limit"
+      );
+
+      if (!stopLimit) {
+        throw new Error("Stop limit order not exists in OCO orders");
+      }
+
+      cancelOrder(stopLimit.id, { orders: newOrders }, callbacks?.cancelOrder);
+
+      // is cycle over
+      return true;
+    },
+    "limit-by-stop-limit": () => {
+      // is cycle over
+      return true;
+    },
+  };
+
+  const isCycleOver = table[triggerOrder.oco.ocoType]();
+
+  return successWrapper({ isCycleOver, orders: newOrders });
+};
+
 // Use case
 export const onOrderDoneHandler: OnOrderDoneHandlerType = (
   params,
@@ -586,6 +735,7 @@ export const onOrderDoneHandler: OnOrderDoneHandlerType = (
   const table = {
     LONG_BUY: longBuyHandler,
     LONG_BUY_OCO: longBuyOCOHandler,
+    LONG_SELL_OCO: longSellOCOHandler,
     LONG_SELL: longSellHandler,
     SHORT_SELL: shortSellHandler,
   };

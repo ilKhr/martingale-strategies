@@ -6,6 +6,8 @@ import {
   LongBuyOCOParams,
   LongBuyParams,
   longSellHandler,
+  longSellOCOHandler,
+  LongSellOCOParams,
   LongSellParams,
   shortSellHandler,
   ShortSellParams,
@@ -22,6 +24,9 @@ describe("shortSellHandler", () => {
     side: "SELL",
     status: "active",
     type: "LIMIT",
+    oco: {
+      isOco: false,
+    },
   } as const;
 
   describe("Correctness of returned values", () => {
@@ -169,6 +174,9 @@ describe("shortSellHandler", () => {
               side: "SELL",
               status: "done",
               type: "LIMIT",
+              oco: {
+                isOco: false,
+              },
             },
             {
               id: 2,
@@ -178,6 +186,9 @@ describe("shortSellHandler", () => {
               side: "SELL",
               status: "active",
               type: "LIMIT",
+              oco: {
+                isOco: false,
+              },
             },
           ],
           isCycleOver: false,
@@ -228,6 +239,9 @@ describe("shortSellHandler", () => {
               side: "SELL",
               status: "done",
               type: "LIMIT",
+              oco: {
+                isOco: false,
+              },
             },
             {
               id: 2,
@@ -237,6 +251,9 @@ describe("shortSellHandler", () => {
               side: "SELL",
               status: "done",
               type: "LIMIT",
+              oco: {
+                isOco: false,
+              },
             },
           ],
           isCycleOver: true,
@@ -256,6 +273,9 @@ describe("longSellHandler", () => {
     side: "BUY",
     status: "active",
     type: "LIMIT",
+    oco: {
+      isOco: false,
+    },
   } as const;
 
   describe("Correctness of returned values", () => {
@@ -431,15 +451,15 @@ describe("longSellHandler", () => {
           orders: [
             {
               ...orders[0],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[1],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[2],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[3],
@@ -451,7 +471,7 @@ describe("longSellHandler", () => {
       });
     });
 
-    test("should mark trigger order as done, mark next buy orders as cancel and is CycleOver true if middle order", () => {
+    test("should mark trigger order as done, mark next buy orders as canceled and is CycleOver true if middle order", () => {
       const localOrders = deepCloneObject(orders.slice(0, 5));
 
       const first = longSellHandler(
@@ -470,15 +490,15 @@ describe("longSellHandler", () => {
           orders: [
             {
               ...orders[0],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[1],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[2],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[3],
@@ -494,7 +514,7 @@ describe("longSellHandler", () => {
       });
     });
 
-    test("should mark trigger order as done, mark next buy orders as cancel and is CycleOver true if last order", () => {
+    test("should mark trigger order as done, mark next buy orders as canceled and is CycleOver true if last order", () => {
       const localOrders = deepCloneObject(orders.slice(0, 6));
 
       const first = longSellHandler(
@@ -513,15 +533,15 @@ describe("longSellHandler", () => {
           orders: [
             {
               ...orders[0],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[1],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[2],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[3],
@@ -552,6 +572,9 @@ describe("longBuyHandler", () => {
     side: "BUY",
     status: "active",
     type: "LIMIT",
+    oco: {
+      isOco: false,
+    },
   } as const;
 
   const configuration = {
@@ -596,6 +619,9 @@ describe("longBuyHandler", () => {
             side: "SELL",
             status: "active",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
         ],
         isCycleOver: false,
@@ -639,7 +665,7 @@ describe("longBuyHandler", () => {
       expect(result.value.orders[0]?.status).toBe("done");
     });
 
-    test("should mark as cancel prev sell order if trigger buy order", () => {
+    test("should mark as canceled prev sell order if trigger buy order", () => {
       const triggerOrderId = 2;
       const sequenceIndexInSide = 1;
 
@@ -675,7 +701,7 @@ describe("longBuyHandler", () => {
         throw new Error("Here fail");
       }
 
-      expect(result.value.orders[1]?.status).toBe("cancel");
+      expect(result.value.orders[1]?.status).toBe("canceled");
     });
   });
 
@@ -807,7 +833,7 @@ describe("longBuyHandler", () => {
             orders[2],
             {
               ...orders[3],
-              status: "cancel",
+              status: "canceled",
             },
             orders[4],
           ],
@@ -874,11 +900,11 @@ describe("longBuyHandler", () => {
             { ...orders[2], status: "done" },
             {
               ...orders[3],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[4],
-              status: "cancel",
+              status: "canceled",
             },
             orders[5],
           ],
@@ -898,6 +924,9 @@ describe("longBuyOCOHandler", () => {
     side: "BUY",
     status: "active",
     type: "LIMIT",
+    oco: {
+      isOco: false,
+    },
   } as const;
 
   const configuration = {
@@ -943,21 +972,27 @@ describe("longBuyOCOHandler", () => {
             price: "10.1",
             quantity: "10",
             sequenceIndexInSide: 2,
-            orderListId: 1,
             side: "SELL",
             status: "active",
             type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit",
+            },
           },
           {
             id: 4,
             price: "45",
             quantity: "10",
-            orderListId: 1,
             sequenceIndexInSide: 2,
             side: "SELL",
             status: "active",
-            stopPrice: "45",
             type: "STOP_LIMIT",
+            oco: {
+              isOco: true,
+              stopPrice: "45",
+              ocoType: "stop-limit",
+            },
           },
         ],
         isCycleOver: false,
@@ -1001,7 +1036,7 @@ describe("longBuyOCOHandler", () => {
       expect(result.value.orders[0]?.status).toBe("done");
     });
 
-    test("should mark as cancel prev sell order if trigger buy order", () => {
+    test("should mark as canceled prev sell order if trigger buy order", () => {
       const triggerOrderId = 2;
       const sequenceIndexInSide = 1;
 
@@ -1037,7 +1072,7 @@ describe("longBuyOCOHandler", () => {
         throw new Error("Here fail");
       }
 
-      expect(result.value.orders[1]?.status).toBe("cancel");
+      expect(result.value.orders[1]?.status).toBe("canceled");
     });
   });
 
@@ -1163,7 +1198,7 @@ describe("longBuyOCOHandler", () => {
             orders[2],
             {
               ...orders[3],
-              status: "cancel",
+              status: "canceled",
             },
             orders[4],
           ],
@@ -1230,25 +1265,353 @@ describe("longBuyOCOHandler", () => {
             { ...orders[2], status: "done" },
             {
               ...orders[3],
-              status: "cancel",
+              status: "canceled",
             },
             {
               ...orders[4],
-              status: "cancel",
+              status: "canceled",
             },
-            { ...orders[5], orderListId: 1 },
             {
               ...orders[5],
-              stopPrice: "45",
+              oco: {
+                isOco: true,
+                ocoType: "limit",
+              },
+            },
+            {
+              ...orders[5],
               sequenceIndexInSide: 2,
-              orderListId: 1,
+
               id: 7,
               price: "45",
               type: "STOP_LIMIT",
+              oco: {
+                isOco: true,
+                ocoType: "stop-limit",
+                stopPrice: "45",
+              },
             },
           ],
         },
         isFail: false,
+      });
+    });
+  });
+});
+
+describe("longSellOcoHandler", () => {
+  const normalOrder: LimitOrder = {
+    id: 1,
+    price: "10",
+    quantity: "10",
+    sequenceIndexInSide: 0,
+    side: "BUY",
+    status: "active",
+    type: "LIMIT",
+    oco: {
+      isOco: false,
+    },
+  } as const;
+
+  const configuration = {
+    countOrders: 3,
+    overlap: 50,
+    profit: 1,
+    currencyPriceInStart: "100",
+    stopLoss: 5,
+  };
+
+  describe("Correctness of returned values", () => {
+    test("should canceled stop loss if trigger limit OCO order", () => {
+      const triggerOrderId = 2;
+      const sequenceIndexInSide = 2;
+
+      const paramsForCreateOco: LongBuyOCOParams = {
+        triggerOrder: {
+          id: triggerOrderId,
+        },
+        grid: {
+          configuration,
+          orders: [
+            {
+              ...normalOrder,
+              sequenceIndexInSide,
+              id: triggerOrderId,
+            },
+          ],
+        },
+      };
+      const afterCreateOcoResult = longBuyOCOHandler(
+        paramsForCreateOco,
+        undefined
+      );
+
+      if (afterCreateOcoResult.isFail) {
+        throw afterCreateOcoResult.value;
+      }
+
+      const paramsForTriggerOcoLimit: LongSellOCOParams = {
+        triggerOrder: {
+          id: afterCreateOcoResult.value.orders.find(
+            (order) => order.oco.isOco && order.oco.ocoType === "limit"
+          )!.id,
+        },
+        grid: {
+          orders: afterCreateOcoResult.value.orders,
+        },
+      };
+
+      const result = longSellOCOHandler(paramsForTriggerOcoLimit, undefined);
+
+      expect(result.value).toEqual({
+        orders: [
+          {
+            ...normalOrder,
+            status: "done",
+            sequenceIndexInSide,
+            id: triggerOrderId,
+          },
+          {
+            id: 3,
+            price: "10.1",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "done",
+            type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit",
+            },
+          },
+          {
+            id: 4,
+            price: "45",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "canceled",
+            type: "STOP_LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "stop-limit",
+              stopPrice: "45",
+            },
+          },
+        ],
+        isCycleOver: true,
+      });
+    });
+
+    test("should create limit by stop limit if trigger stop limit OCO order", () => {
+      const triggerOrderId = 2;
+      const sequenceIndexInSide = 2;
+
+      const paramsForCreateOco: LongBuyOCOParams = {
+        triggerOrder: {
+          id: triggerOrderId,
+        },
+        grid: {
+          configuration,
+          orders: [
+            {
+              ...normalOrder,
+              sequenceIndexInSide,
+              id: triggerOrderId,
+            },
+          ],
+        },
+      };
+      const afterCreateOcoResult = longBuyOCOHandler(
+        paramsForCreateOco,
+        undefined
+      );
+
+      if (afterCreateOcoResult.isFail) {
+        throw afterCreateOcoResult.value;
+      }
+
+      const paramsForTriggerOcoLimit: LongSellOCOParams = {
+        triggerOrder: {
+          id: afterCreateOcoResult.value.orders.find(
+            (order) => order.oco.isOco && order.oco.ocoType === "stop-limit"
+          )!.id,
+        },
+        grid: {
+          orders: afterCreateOcoResult.value.orders,
+        },
+      };
+
+      const result = longSellOCOHandler(paramsForTriggerOcoLimit, undefined);
+
+      expect(result.value).toEqual({
+        orders: [
+          {
+            ...normalOrder,
+            status: "done",
+            sequenceIndexInSide,
+            id: triggerOrderId,
+          },
+          {
+            id: 3,
+            price: "10.1",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "canceled",
+            type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit",
+            },
+          },
+          {
+            id: 4,
+            price: "45",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "done",
+            type: "STOP_LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "stop-limit",
+              stopPrice: "45",
+            },
+          },
+          {
+            id: 5,
+            price: "45",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "active",
+            type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit-by-stop-limit",
+            },
+          },
+        ],
+        isCycleOver: false,
+      });
+    });
+
+    test("should create mark as done limit by stop limit and circle is over", () => {
+      const triggerOrderId = 2;
+      const sequenceIndexInSide = 2;
+
+      const paramsForCreateOco: LongBuyOCOParams = {
+        triggerOrder: {
+          id: triggerOrderId,
+        },
+        grid: {
+          configuration,
+          orders: [
+            {
+              ...normalOrder,
+              sequenceIndexInSide,
+              id: triggerOrderId,
+            },
+          ],
+        },
+      };
+      const afterCreateOcoResult = longBuyOCOHandler(
+        paramsForCreateOco,
+        undefined
+      );
+
+      if (afterCreateOcoResult.isFail) {
+        throw afterCreateOcoResult.value;
+      }
+
+      const paramsForTriggerOcoLimit: LongSellOCOParams = {
+        triggerOrder: {
+          id: afterCreateOcoResult.value.orders.find(
+            (order) => order.oco.isOco && order.oco.ocoType === "stop-limit"
+          )!.id,
+        },
+        grid: {
+          orders: afterCreateOcoResult.value.orders,
+        },
+      };
+
+      const resultAfterStopLimitDone = longSellOCOHandler(
+        paramsForTriggerOcoLimit,
+        undefined
+      );
+
+      if (resultAfterStopLimitDone.isFail) {
+        throw resultAfterStopLimitDone.value;
+      }
+
+      const paramsForTriggerOcoLimitByStopLimit: LongSellOCOParams = {
+        triggerOrder: {
+          id: resultAfterStopLimitDone.value.orders.find(
+            (order) =>
+              order.oco.isOco && order.oco.ocoType === "limit-by-stop-limit"
+          )!.id,
+        },
+        grid: {
+          orders: resultAfterStopLimitDone.value.orders,
+        },
+      };
+
+      const result = longSellOCOHandler(
+        paramsForTriggerOcoLimitByStopLimit,
+        undefined
+      );
+
+      expect(result.value).toEqual({
+        orders: [
+          {
+            ...normalOrder,
+            status: "done",
+            sequenceIndexInSide,
+            id: triggerOrderId,
+          },
+          {
+            id: 3,
+            price: "10.1",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "canceled",
+            type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit",
+            },
+          },
+          {
+            id: 4,
+            price: "45",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "done",
+            type: "STOP_LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "stop-limit",
+              stopPrice: "45",
+            },
+          },
+          {
+            id: 5,
+            price: "45",
+            quantity: "10",
+            sequenceIndexInSide,
+            side: "SELL",
+            status: "done",
+            type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit-by-stop-limit",
+            },
+          },
+        ],
+        isCycleOver: true,
       });
     });
   });

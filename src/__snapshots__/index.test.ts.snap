@@ -14,6 +14,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
     "orders": [
       {
         "id": 1,
+        "oco": {
+          "isOco": false,
+        },
         "price": "95",
         "quantity": "0.83689026279428100526",
         "sequenceIndexInSide": 0,
@@ -23,6 +26,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 2,
+        "oco": {
+          "isOco": false,
+        },
         "price": "90",
         "quantity": "0.92755337459699478083",
         "sequenceIndexInSide": 1,
@@ -32,6 +38,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 3,
+        "oco": {
+          "isOco": false,
+        },
         "price": "85",
         "quantity": "1.03122110469901184457",
         "sequenceIndexInSide": 2,
@@ -41,6 +50,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 4,
+        "oco": {
+          "isOco": false,
+        },
         "price": "80",
         "quantity": "1.1504560449298350891",
         "sequenceIndexInSide": 3,
@@ -50,6 +62,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 5,
+        "oco": {
+          "isOco": false,
+        },
         "price": "75",
         "quantity": "1.28851077032141529979",
         "sequenceIndexInSide": 4,
@@ -59,6 +74,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 6,
+        "oco": {
+          "isOco": false,
+        },
         "price": "70",
         "quantity": "1.44957461661159221227",
         "sequenceIndexInSide": 5,
@@ -68,6 +86,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 7,
+        "oco": {
+          "isOco": false,
+        },
         "price": "65",
         "quantity": "1.63913437416849273233",
         "sequenceIndexInSide": 6,
@@ -77,6 +98,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 8,
+        "oco": {
+          "isOco": false,
+        },
         "price": "60",
         "quantity": "1.86451535061666048303",
         "sequenceIndexInSide": 7,
@@ -86,6 +110,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 9,
+        "oco": {
+          "isOco": false,
+        },
         "price": "55",
         "quantity": "2.13571758343362928056",
         "sequenceIndexInSide": 8,
@@ -95,6 +122,9 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 10,
+        "oco": {
+          "isOco": false,
+        },
         "price": "50",
         "quantity": "2.46675380886584181904",
         "sequenceIndexInSide": 9,
@@ -104,88 +134,118 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 11,
+        "oco": {
+          "isOco": false,
+        },
         "price": "95.95",
         "quantity": "0.83689026279428100526",
         "sequenceIndexInSide": 0,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 12,
+        "oco": {
+          "isOco": false,
+        },
         "price": "93.29525691699604743083",
         "quantity": "1.76444363739127578609",
         "sequenceIndexInSide": 1,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 13,
+        "oco": {
+          "isOco": false,
+        },
         "price": "90.54896693911690903488",
         "quantity": "2.79566474209028763066",
         "sequenceIndexInSide": 2,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 14,
+        "oco": {
+          "isOco": false,
+        },
         "price": "87.70674325863052500428",
         "quantity": "3.94612078702012271976",
         "sequenceIndexInSide": 3,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 15,
+        "oco": {
+          "isOco": false,
+        },
         "price": "84.76357671520760958221",
         "quantity": "5.23463155734153801955",
         "sequenceIndexInSide": 4,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 16,
+        "oco": {
+          "isOco": false,
+        },
         "price": "81.71367022001670668914",
         "quantity": "6.68420617395313023182",
         "sequenceIndexInSide": 5,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 17,
+        "oco": {
+          "isOco": false,
+        },
         "price": "78.55021512879395239821",
         "quantity": "8.32334054812162296415",
         "sequenceIndexInSide": 6,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 18,
+        "oco": {
+          "isOco": false,
+        },
         "price": "75.26508310620099002459",
         "quantity": "10.18785589873828344718",
         "sequenceIndexInSide": 7,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 19,
+        "oco": {
+          "isOco": false,
+        },
         "price": "71.84839153458161975409",
         "quantity": "12.32357348217191272774",
         "sequenceIndexInSide": 8,
         "side": "SELL",
-        "status": "cancel",
+        "status": "canceled",
         "type": "LIMIT",
       },
       {
         "id": 20,
-        "orderListId": 1,
+        "oco": {
+          "isOco": true,
+          "ocoType": "limit",
+        },
         "price": "68.28787356260957689196",
         "quantity": "14.79032729103775454678",
         "sequenceIndexInSide": 9,
@@ -195,13 +255,16 @@ exports[`MartingaleStrategies > Work correctly with x10 onOrderDone 1`] = `
       },
       {
         "id": 21,
-        "orderListId": 1,
+        "oco": {
+          "isOco": true,
+          "ocoType": "stop-limit",
+          "stopPrice": "45",
+        },
         "price": "45",
         "quantity": "14.79032729103775454678",
         "sequenceIndexInSide": 9,
         "side": "SELL",
         "status": "active",
-        "stopPrice": "45",
         "type": "STOP_LIMIT",
       },
     ],

@@ -44,6 +44,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 0,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 2,
@@ -53,6 +56,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 1,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 3,
@@ -62,6 +68,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 2,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 4,
@@ -71,6 +80,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 3,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 5,
@@ -80,6 +92,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 4,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 6,
@@ -89,6 +104,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 5,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 7,
@@ -98,6 +116,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 6,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 8,
@@ -107,6 +128,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 7,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 9,
@@ -116,6 +140,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 8,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 10,
@@ -125,6 +152,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 9,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
     ]);
   });
@@ -140,6 +170,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 0,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 2,
@@ -149,6 +182,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 1,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 3,
@@ -158,6 +194,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 2,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 4,
@@ -167,6 +206,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 3,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
     ]);
   });
@@ -183,6 +225,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 0,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 2,
@@ -192,6 +237,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 1,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 3,
@@ -201,6 +249,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 2,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
       {
         id: 4,
@@ -210,6 +261,9 @@ describe("calculateOrderGrid", () => {
         status: "active",
         sequenceIndexInSide: 3,
         type: "LIMIT",
+        oco: {
+          isOco: false,
+        },
       },
     ]);
   });

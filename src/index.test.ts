@@ -6,6 +6,7 @@ const createOrder = vi.fn();
 const cancelOrder = vi.fn();
 const createOcoOrder = vi.fn();
 const markOrderAsDone = vi.fn();
+const createOrderLimitByStopLimit = vi.fn();
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -42,6 +43,7 @@ describe("MartingaleStrategies", () => {
         createOcoOrder,
         createOrder,
         markOrderAsDone,
+        createOrderLimitByStopLimit,
       }
     );
 
@@ -64,6 +66,9 @@ describe("MartingaleStrategies", () => {
             quantity: "0.83689026279428100526",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 2,
@@ -73,6 +78,9 @@ describe("MartingaleStrategies", () => {
             quantity: "0.92755337459699478083",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 3,
@@ -82,6 +90,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.03122110469901184457",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 4,
@@ -91,6 +102,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.1504560449298350891",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 5,
@@ -100,6 +114,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.28851077032141529979",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 6,
@@ -109,6 +126,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.44957461661159221227",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 7,
@@ -118,6 +138,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.63913437416849273233",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 8,
@@ -127,6 +150,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.86451535061666048303",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 9,
@@ -136,6 +162,9 @@ describe("MartingaleStrategies", () => {
             quantity: "2.13571758343362928056",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 10,
@@ -145,6 +174,9 @@ describe("MartingaleStrategies", () => {
             quantity: "2.46675380886584181904",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 11,
@@ -154,6 +186,9 @@ describe("MartingaleStrategies", () => {
             quantity: "0.83689026279428100526",
             side: "SELL",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
         ],
       },
@@ -172,6 +207,9 @@ describe("MartingaleStrategies", () => {
       quantity: "0.83689026279428100526",
       side: "BUY",
       type: "LIMIT",
+      oco: {
+        isOco: false,
+      },
     });
   });
 
@@ -209,6 +247,7 @@ describe("MartingaleStrategies", () => {
         createOcoOrder,
         createOrder,
         markOrderAsDone,
+        createOrderLimitByStopLimit,
       }
     );
 
@@ -231,6 +270,9 @@ describe("MartingaleStrategies", () => {
             quantity: "0.83689026279428100526",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 2,
@@ -240,6 +282,9 @@ describe("MartingaleStrategies", () => {
             quantity: "0.92755337459699478083",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 3,
@@ -249,6 +294,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.03122110469901184457",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 4,
@@ -258,6 +306,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.1504560449298350891",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 5,
@@ -267,6 +318,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.28851077032141529979",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 6,
@@ -276,6 +330,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.44957461661159221227",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 7,
@@ -285,6 +342,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.63913437416849273233",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 8,
@@ -294,6 +354,9 @@ describe("MartingaleStrategies", () => {
             quantity: "1.86451535061666048303",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 9,
@@ -303,6 +366,9 @@ describe("MartingaleStrategies", () => {
             quantity: "2.13571758343362928056",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 10,
@@ -312,27 +378,36 @@ describe("MartingaleStrategies", () => {
             quantity: "2.46675380886584181904",
             side: "BUY",
             type: "LIMIT",
+            oco: {
+              isOco: false,
+            },
           },
           {
             id: 11,
             status: "active",
             sequenceIndexInSide: 9,
-            orderListId: 1,
             price: "68.28787356260957689196",
             quantity: "14.79032729103775454678",
             side: "SELL",
             type: "LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "limit",
+            },
           },
           {
             id: 12,
-            orderListId: 1,
             price: "45",
             quantity: "14.79032729103775454678",
             sequenceIndexInSide: 9,
             side: "SELL",
             status: "active",
-            stopPrice: "45",
             type: "STOP_LIMIT",
+            oco: {
+              isOco: true,
+              ocoType: "stop-limit",
+              stopPrice: "45",
+            },
           },
         ],
       },
@@ -351,6 +426,9 @@ describe("MartingaleStrategies", () => {
       quantity: "2.46675380886584181904",
       side: "BUY",
       type: "LIMIT",
+      oco: {
+        isOco: false,
+      },
     });
   });
 
@@ -391,6 +469,7 @@ describe("MartingaleStrategies", () => {
           createOcoOrder,
           createOrder,
           markOrderAsDone,
+          createOrderLimitByStopLimit,
         }
       );
     }
@@ -409,6 +488,9 @@ describe("MartingaleStrategies", () => {
       quantity: "0.83689026279428100526",
       side: "BUY",
       type: "LIMIT",
+      oco: {
+        isOco: false,
+      },
     });
   });
 });
