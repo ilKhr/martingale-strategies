@@ -21,7 +21,7 @@ import { Grid } from "../grid/grid";
 
 type OrderType = "OCO" | "LIMIT" | "STOP_LIMIT";
 
-type OcoOrderTypes = "limit" | "limit-by-stop-limit" | "stop-limit";
+type OcoOrderTypes = "limit" | "stop-limit";
 
 export type LimitOrder = {
   id: ID;
@@ -31,17 +31,26 @@ export type LimitOrder = {
   type: Extract<OrderType, "LIMIT">;
   status: "active" | "done" | "canceled";
   sequenceIndexInSide: number;
-  oco:
-    | {
-        isOco: false;
-      }
-    | {
-        isOco: true;
-        ocoType: Extract<OcoOrderTypes, "limit" | "limit-by-stop-limit">;
-      };
+  oco: {
+    isOco: false;
+  };
 };
 
-export type StopLimitOrder = {
+export type OcoLimitOrder = {
+  id: ID;
+  quantity: string;
+  price: string;
+  side: Side;
+  type: Extract<OrderType, "LIMIT">;
+  status: "active" | "done" | "canceled";
+  sequenceIndexInSide: number;
+  oco: {
+    isOco: true;
+    ocoType: Extract<OcoOrderTypes, "limit">;
+  };
+};
+
+export type OcoStopLimitOrder = {
   id: ID;
   quantity: string;
   price: string;
@@ -56,12 +65,12 @@ export type StopLimitOrder = {
   };
 };
 
-export type Order = LimitOrder | StopLimitOrder;
+export type Order = LimitOrder | OcoLimitOrder | OcoStopLimitOrder;
 
 export type OcoGroupOrders = {
   type: Extract<OrderType, "OCO">;
   sequenceIndexInSide: number;
-  orders: [LimitOrder, StopLimitOrder];
+  orders: [OcoLimitOrder, OcoStopLimitOrder];
 };
 
 export type CreateOrderParams = {
@@ -122,7 +131,7 @@ export type LongBuyOCOParams = {
       overlap: Grid["configuration"]["overlap"];
       currencyPriceInStart: Grid["configuration"]["currencyPriceInStart"];
     };
-    orders: (LimitOrder | StopLimitOrder)[];
+    orders: (LimitOrder | OcoLimitOrder | OcoStopLimitOrder)[];
   };
 };
 
@@ -131,7 +140,7 @@ export type LongSellOCOParams = {
     id: LimitOrder["id"];
   };
   grid: {
-    orders: (LimitOrder | StopLimitOrder)[];
+    orders: (LimitOrder | OcoLimitOrder | OcoStopLimitOrder)[];
   };
 };
 
@@ -152,7 +161,11 @@ export type OnOrderDoneParams = {
 };
 
 export type CallbackBaseOrderAction<
-  ParamsType extends LimitOrder | StopLimitOrder | OcoGroupOrders
+  ParamsType extends
+    | LimitOrder
+    | OcoLimitOrder
+    | OcoStopLimitOrder
+    | OcoGroupOrders
 > = (param: ParamsType) => unknown;
 
 export type BaseOrderActionsCallbacks = {
@@ -183,6 +196,10 @@ export type OnOrderDoneHandlerType = (
   },
   BaseError
 >;
+
+// type guard
+const isOcoOrder = (order: Order): order is OcoLimitOrder | OcoStopLimitOrder =>
+  order.oco.isOco;
 
 // Base Order Actions
 /**
@@ -217,41 +234,12 @@ export const createAndAddOrder: BasicOrderAction<
   return newId;
 };
 
-export const createAndAddOrderLimitByStopLimit: BasicOrderAction<
-  CreateOrderParams,
-  LimitOrder["id"],
-  BaseOrderActionsCallbacks["createOrderLimitByStopLimit"]
-> = (params, grid, callback): LimitOrder["id"] => {
-  const maxIdOrder = getOrderWithMaxId(grid.orders);
-  const nextSequenceIndex = getNextSequenceIndexByRules(
-    grid.orders,
-    params.side
-  );
-
-  const newId = (maxIdOrder?.id ?? 0) + 1;
-
-  const newOrder: LimitOrder = {
-    id: newId,
-    status: "active",
-    type: "LIMIT",
-    sequenceIndexInSide: nextSequenceIndex,
-    oco: { isOco: true, ocoType: "limit-by-stop-limit" },
-    ...params,
-  };
-
-  grid.orders.push(newOrder);
-
-  callback && callback(newOrder);
-
-  return newId;
-};
-
 /**
  * Mutable grid
  */
 const createAndAddOCOOrder: BasicOrderAction<
   CreateOCOOrderParams,
-  [LimitOrder["id"], StopLimitOrder["id"]],
+  [OcoLimitOrder["id"], OcoStopLimitOrder["id"]],
   BaseOrderActionsCallbacks["createOcoOrder"]
 > = (params, grid, callback) => {
   if (grid.orders.some((order) => order.oco.isOco)) {
@@ -612,7 +600,7 @@ export const longSellOCOHandler: ReactiveHandlerType<
   LongSellOCOParams,
   Order
 > = (params, callbacks) => {
-  if (!params.grid.orders.some((order) => order.oco.isOco)) {
+  if (!params.grid.orders.some((order) => isOcoOrder(order))) {
     throw new Error("OCO order not exists in this grid");
   }
 
@@ -642,70 +630,30 @@ export const longSellOCOHandler: ReactiveHandlerType<
     );
   }
 
-  if (!triggerOrder.oco.isOco) {
+  if (!isOcoOrder(triggerOrder)) {
     throw new Error(`Trigger order should be OCO`);
   }
 
-  const table: Record<OcoOrderTypes, () => boolean> = {
-    "stop-limit": () => {
-      const limitOrder = newOrders.find(
-        (order) => order.oco.isOco && order.oco.ocoType === "limit"
-      );
-
-      const stopLimit = newOrders.find<StopLimitOrder>(
-        (order): order is StopLimitOrder =>
-          order.oco.isOco && order.oco.ocoType === "stop-limit"
-      );
-
-      if (!limitOrder) {
-        throw new Error("Limit order not exists in OCO orders");
-      }
-
-      if (!stopLimit) {
-        throw new Error("Stop limit order not exists in OCO orders");
-      }
-
-      cancelOrder(limitOrder.id, { orders: newOrders }, callbacks?.cancelOrder);
-
-      const side = "SELL";
-
-      createAndAddOrderLimitByStopLimit(
-        // Limit by stop limit
-        {
-          price: stopLimit.oco.stopPrice,
-          quantity: stopLimit.quantity,
-          side,
-        },
-        { orders: newOrders },
-        callbacks?.createOrderLimitByStopLimit
-      );
-
-      // is cycle over
-      return false;
-    },
-    limit: () => {
-      const stopLimit = newOrders.find(
-        (order) => order.oco.isOco && order.oco.ocoType === "stop-limit"
-      );
-
-      if (!stopLimit) {
-        throw new Error("Stop limit order not exists in OCO orders");
-      }
-
-      cancelOrder(stopLimit.id, { orders: newOrders }, callbacks?.cancelOrder);
-
-      // is cycle over
-      return true;
-    },
-    "limit-by-stop-limit": () => {
-      // is cycle over
-      return true;
-    },
+  const typeToOposite: Record<OcoOrderTypes, OcoOrderTypes> = {
+    limit: "stop-limit",
+    "stop-limit": "limit",
   };
 
-  const isCycleOver = table[triggerOrder.oco.ocoType]();
+  const opositeOrder = newOrders.find(
+    (order) =>
+      order.oco.isOco &&
+      order.oco.ocoType === typeToOposite[triggerOrder.oco.ocoType]
+  );
 
-  return successWrapper({ isCycleOver, orders: newOrders });
+  if (!opositeOrder) {
+    throw new Error(
+      `Oposite order for ${triggerOrder.oco.ocoType} order not exists`
+    );
+  }
+
+  cancelOrder(opositeOrder.id, { orders: newOrders }, callbacks?.cancelOrder);
+
+  return successWrapper({ isCycleOver: true, orders: newOrders });
 };
 
 // Use case
