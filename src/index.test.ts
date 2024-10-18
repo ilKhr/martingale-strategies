@@ -6,7 +6,6 @@ const createOrder = vi.fn();
 const cancelOrder = vi.fn();
 const createOcoOrder = vi.fn();
 const markOrderAsDone = vi.fn();
-const createOrderLimitByStopLimit = vi.fn();
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -43,7 +42,6 @@ describe("MartingaleStrategies", () => {
         createOcoOrder,
         createOrder,
         markOrderAsDone,
-        createOrderLimitByStopLimit,
       }
     );
 
@@ -247,7 +245,6 @@ describe("MartingaleStrategies", () => {
         createOcoOrder,
         createOrder,
         markOrderAsDone,
-        createOrderLimitByStopLimit,
       }
     );
 
@@ -469,7 +466,6 @@ describe("MartingaleStrategies", () => {
           createOcoOrder,
           createOrder,
           markOrderAsDone,
-          createOrderLimitByStopLimit,
         }
       );
     }

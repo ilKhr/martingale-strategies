@@ -170,7 +170,6 @@ export type CallbackBaseOrderAction<
 
 export type BaseOrderActionsCallbacks = {
   createOrder: CallbackBaseOrderAction<Order>;
-  createOrderLimitByStopLimit: CallbackBaseOrderAction<Order>;
   cancelOrder: CallbackBaseOrderAction<Order>;
   markOrderAsDone: CallbackBaseOrderAction<Order>;
   createOcoOrder: CallbackBaseOrderAction<OcoGroupOrders>;
